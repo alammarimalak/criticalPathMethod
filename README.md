@@ -22,8 +22,11 @@ Predecessors – comma-separated IDs (e.g., A,B)
 ### Run Locally
 
 git clone https://github.com/alammarimalak/criticalPathMethod.git
+
 cd criticalPathMethod
+
 npm install
+
 npm start
 
 Opens the app at http://localhost:3000
@@ -36,9 +39,13 @@ npm install gh-pages --save-dev
 Make sure your package.json includes:
 
 "homepage": "https://alammarimalak.github.io/criticalPathMethod",
+
 "scripts": {
+
   "predeploy": "npm run build",
+
   "deploy": "gh-pages -d build"
+
 }
 
 then deploy: npm run deploy
