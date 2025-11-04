@@ -1,38 +1,315 @@
-.App {
-  text-align: center;
+/* App.css */
+:root {
+  --primary-color: #2563eb;
+  --success-color: #059669;
+  --danger-color: #dc2626;
+  --warning-color: #d97706;
+  --bg-color: #0f172a;
+  --surface-color: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --border-color: #334155;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: var(--text-primary);
   min-height: 100vh;
+  line-height: 1.6;
+}
+
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.app-header h1 {
+  font-size: 2.5rem;
+  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 0.5rem;  
+}
+
+.app-header p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.table-container {
+  background: var(--surface-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+.task-table, .results-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface-color);
+}
+
+.task-table th, .results-table th {
+  background: rgba(30, 41, 59, 0.8);
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.task-table td, .results-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.task-row:hover {
+  background: rgba(51, 65, 85, 0.3);
+}
+
+.critical-task {
+  background: rgba(220, 38, 38, 0.1) !important;
+  border-left: 4px solid var(--danger-color);
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.8);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.control-panel {
   display: flex;
-  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  gap: 0.5rem;
+}
+
+.btn-primary {
+  background: var(--primary-color);
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.btn-success {
+  background: var(--success-color);
+  color: white;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.delete-btn {
+  background: var(--danger-color);
+  color: white;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.delete-btn:hover {
+  background: #b91c1c;
+}
+
+.critical-path {
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.critical-path.success {
+  background: rgba(5, 150, 105, 0.1);
+  border: 1px solid var(--success-color);
+  color: var(--success-color);
+}
+
+.critical-path.warning {
+  background: rgba(217, 119, 6, 0.1);
+  border: 1px solid var(--warning-color);
+  color: var(--warning-color);
+}
+
+.formulas-container {
+  background: var(--surface-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+  border: 1px solid var(--border-color);
+}
+
+.formulas-container h3 {
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.formulas-container ul {
+  list-style: none;
+  padding: 0;
+}
+
+.formulas-container li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.formulas-container li:last-child {
+  border-bottom: none;
+}
+
+.formulas-container code {
+  background: rgba(15, 23, 42, 0.8);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: 'Consolas', monospace;
+  color: #60a5fa;
+}
+
+@media (max-width: 768px) {
+  .app {
+    padding: 1rem;
   }
-  to {
-    transform: rotate(360deg);
+  
+  .control-panel {
+    flex-direction: column;
+  }
+  
+  .table-container {
+    overflow-x: auto;
+  }
+  
+  .task-table, .results-table {
+    min-width: 600px;
+  }
+}
+
+.app-footer {
+  background: var(--surface-color);
+  border-top: 1px solid var(--border-color);
+  margin-top: 3rem;
+  padding: 2rem 0 1rem;
+  border-radius: 12px 12px 0 0;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.footer-section h4 {
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.footer-section p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+}
+
+.developer-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.developer-links a {
+  color: #60a5fa;
+  text-decoration: none;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.developer-links a:hover {
+  background: rgba(96, 165, 250, 0.1);
+  border-color: #60a5fa;
+  transform: translateY(-1px);
+}
+
+.footer-bottom {
+  border-top: 1px solid var(--border-color);
+  margin-top: 2rem;
+  padding-top: 1rem;
+  text-align: center;
+}
+
+.footer-bottom p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.btn-warning {
+  background: var(--warning-color);
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 0 1rem;
+  }
+  
+  .developer-links {
+    justify-content: center;
+  }
+  
+  .app-footer {
+    margin-top: 2rem;
+    padding: 1.5rem 0 1rem;
   }
 }
