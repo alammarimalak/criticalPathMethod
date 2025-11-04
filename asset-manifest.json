@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/criticalPathMethod/static/css/main.bece152e.css",
+    "main.js": "/criticalPathMethod/static/js/main.89ffa54c.js",
+    "index.html": "/criticalPathMethod/index.html",
+    "main.bece152e.css.map": "/criticalPathMethod/static/css/main.bece152e.css.map",
+    "main.89ffa54c.js.map": "/criticalPathMethod/static/js/main.89ffa54c.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.bece152e.css",
+    "static/js/main.89ffa54c.js"
+  ]
+}
