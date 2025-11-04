@@ -6,7 +6,6 @@ export const calculateSchedule = (tasks) => {
     taskMap[task.id] = { ...task, ES: 0, EF: 0, LS: 0, LF: 0, MT: 0, ML: 0 };
   });
 
-  // Forward pass
   for (const task of tasks) {
     if (task.predecessors.length === 0) {
       taskMap[task.id].ES = 0;

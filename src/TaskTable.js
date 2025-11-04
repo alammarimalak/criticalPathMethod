@@ -21,8 +21,7 @@ const TaskTable = ({ tasks, onUpdateTask, onDeleteTask }) => {
                 />
               </td>
               <td>
-                <input
-                  type="number"
+                <input                  
                   value={task.duration}
                   onChange={(e) => onUpdateTask(index, 'duration', e.target.value)}
                   className="input-field"
