@@ -8,8 +8,11 @@ Live demo: https://alammarimalak.github.io/criticalPathMethod
 ### How to Use
 
 1) Add tasks:
+
 ID – unique letter or name (e.g., A)
+
 Duration – in days (e.g., 3)
+
 Predecessors – comma-separated IDs (e.g., A,B)
 
 2)Click Calculate Schedule
