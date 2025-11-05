@@ -2,16 +2,27 @@ export const calculateSchedule = (tasks) => {
   if (tasks.length === 0) return [];
   
   const validationErrors = [];
+  const taskIds = new Set();
   
   tasks.forEach((task, index) => {
     if (!task.id || task.id.trim() === '') {
       validationErrors.push(`Task at position ${index + 1} has no ID`);
+      return;
     }
+    
+    const taskId = task.id.trim();
+    
+    if (taskIds.has(taskId)) {
+      validationErrors.push(`Duplicate task ID: "${taskId}". Task IDs must be unique.`);
+    } else {
+      taskIds.add(taskId);
+    }
+    
     if (task.duration <= 0) {
-      validationErrors.push(`Task "${task.id}" has invalid duration: ${task.duration}. Duration must be at least 1.`);
+      validationErrors.push(`Task "${taskId}" has invalid duration: ${task.duration}. Duration must be at least 1.`);
     }
     if (isNaN(task.duration)) {
-      validationErrors.push(`Task "${task.id}" has non-numeric duration: ${task.duration}`);
+      validationErrors.push(`Task "${taskId}" has non-numeric duration: ${task.duration}`);
     }
   });
 
@@ -32,20 +43,22 @@ export const calculateSchedule = (tasks) => {
     };
   });
 
-    for (const task of tasks) {
-    const currentTask = taskMap[task.id]; 
+  for (const task of tasks) {
+    const currentTask = taskMap[task.id];
     
     if (currentTask.predecessors.length === 0) {
       currentTask.ES = 0;
     } else {
       const preds = currentTask.predecessors.map(p => taskMap[p]);
-      if (preds.some(p => !p)) throw new Error(`Invalid predecessor in task ${currentTask.id}`);
+      const invalidPreds = currentTask.predecessors.filter(p => !taskMap[p]);
+      if (invalidPreds.length > 0) {
+        throw new Error(`Task "${currentTask.id}" has invalid predecessors: ${invalidPreds.join(', ')}. Valid task IDs are: ${tasks.map(t => t.id).join(', ')}`);
+      }
       currentTask.ES = Math.max(...preds.map(p => p.EF));
     }
-    currentTask.EF = currentTask.ES + currentTask.duration; 
+    currentTask.EF = currentTask.ES + currentTask.duration;
   }
 
-  
   const successors = {};
   tasks.forEach(t => {
     t.predecessors.forEach(p => {
@@ -57,15 +70,15 @@ export const calculateSchedule = (tasks) => {
   const maxEF = Math.max(...tasks.map(t => taskMap[t.id].EF));
   const reversed = [...tasks].reverse();
 
-    for (const task of reversed) {
-    const currentTask = taskMap[task.id]; 
+  for (const task of reversed) {
+    const currentTask = taskMap[task.id];
     
     if (!successors[currentTask.id]) {
       currentTask.LF = maxEF;
     } else {
       currentTask.LF = Math.min(...successors[currentTask.id].map(s => taskMap[s].LS));
     }
-    currentTask.LS = currentTask.LF - currentTask.duration; 
+    currentTask.LS = currentTask.LF - currentTask.duration;
   }
 
   for (const task of tasks) {

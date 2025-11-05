@@ -44,7 +44,7 @@ function App() {
 
   const handleAddTask = () => {
     const newId = String.fromCharCode(65 + tasks.length); 
-    setTasks(prev => [...prev, { id: newId, duration: 0, predecessors: [] }]);
+    setTasks(prev => [...prev, { id: newId, duration: 1, predecessors: [] }]);
   };
 
   const handleDeleteTask = (index) => {
@@ -65,9 +65,30 @@ function App() {
         predecessors: predecessorsArray
       };
     } else if (field === 'duration') {
+      
+      const duration = parseInt(value) || 1;
       updatedTasks[index] = {
         ...updatedTasks[index],
-        [field]: parseInt(value) || 0
+        [field]: Math.max(1, duration) 
+      };
+    } else if (field === 'id') {
+      const newId = value.trim();
+            
+      const isDuplicate = updatedTasks.some((task, taskIndex) => 
+        taskIndex !== index && task.id.trim().toLowerCase() === newId.toLowerCase()
+      );
+      
+      if (isDuplicate && newId !== '') {
+        setError(`Task ID "${newId}" is already used. Task IDs must be unique.`);
+      } else if (newId === '') {
+        setError(`Task ID cannot be empty.`);
+      } else {
+        setError('');
+      }
+      
+      updatedTasks[index] = {
+        ...updatedTasks[index],
+        [field]: newId
       };
     } else {
       updatedTasks[index] = {
@@ -83,6 +104,7 @@ function App() {
     setTasks(initialTasks);
     setResults([]);
     setCriticalPath([]);
+    setError('');
   }
 
   return (
