@@ -1,6 +1,3 @@
-// components/ResultsTable.jsx
-import React from 'react';
-
 const ResultsTable = ({ results }) => {
   return (
     <div className="table-container">
