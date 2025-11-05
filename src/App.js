@@ -28,21 +28,31 @@ function App() {
   };
 
   const handleUpdateTask = (index, field, value) => {
-    setTasks(prev => prev.map((task, i) => {
-      if (i === index) {
-        if (field === 'predecessors') {
-          return {
-            ...task,
-            predecessors: value.split(',').map(v => v.trim()).filter(Boolean)
-          };
-        } else if (field === 'duration') {
-          return { ...task, duration: parseInt(value) || 0 };
-        } else {
-          return { ...task, [field]: value };
-        }
-      }
-      return task;
-    }));
+    const updatedTasks = [...tasks];
+    
+    if (field === 'predecessors') {
+        const predecessorsArray = value
+        .split(',')
+        .map(p => p.trim())
+        .filter(p => p !== ''); 
+      
+      updatedTasks[index] = {
+        ...updatedTasks[index],
+        predecessors: predecessorsArray
+      };
+    } else if (field === 'duration') {
+      updatedTasks[index] = {
+        ...updatedTasks[index],
+        [field]: parseInt(value) || 0
+      };
+    } else {
+      updatedTasks[index] = {
+        ...updatedTasks[index],
+        [field]: value
+      };
+    }
+    
+    setTasks(updatedTasks);
   };
 
   const handleCalculate = () => {

@@ -1,4 +1,18 @@
+import {useState} from 'react';
+
 const TaskTable = ({ tasks, onUpdateTask, onDeleteTask }) => {
+  const [tempValues, setTempValues] = useState({});
+
+  const handlePredecessorsChange = (index, value) => {
+    setTempValues(prev => ({ ...prev, [index]: value }));
+  };
+
+  const handlePredecessorsBlur = (index) => {
+    if (tempValues[index] !== undefined) {
+      onUpdateTask(index, 'predecessors', tempValues[index]);
+    }
+  };
+
   return (
     <div className="table-container">
       <table className="task-table">
@@ -15,22 +29,26 @@ const TaskTable = ({ tasks, onUpdateTask, onDeleteTask }) => {
             <tr key={index} className="task-row">
               <td>
                 <input
+                  type="text"
                   value={task.id}
                   onChange={(e) => onUpdateTask(index, 'id', e.target.value)}
                   className="input-field"
                 />
               </td>
               <td>
-                <input                  
+                <input
+                  type="text"                  
                   value={task.duration}
-                  onChange={(e) => onUpdateTask(index, 'duration', e.target.value)}
+                  onChange={(e) => onUpdateTask(index, 'duration', parseInt(e.target.value) || 0)}
                   className="input-field"
                 />
               </td>
               <td>
                 <input
-                  value={task.predecessors.join(', ')}
-                  onChange={(e) => onUpdateTask(index, 'predecessors', e.target.value)}
+                  type="text"
+                  value={tempValues[index] !== undefined ? tempValues[index] : task.predecessors.join(', ')}
+                  onChange={(e) => handlePredecessorsChange(index, e.target.value)}
+                  onBlur={() => handlePredecessorsBlur(index)}
                   className="input-field"
                   placeholder="A, B, C"
                 />
