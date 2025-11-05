@@ -17,6 +17,30 @@ function App() {
   const [tasks, setTasks] = useState(initialTasks);
   const [results, setResults] = useState([]);
   const [criticalPath, setCriticalPath] = useState([]);
+  const [error, setError] = useState('');
+
+  const handleCalculate = () => {
+    try{
+      setError('');
+
+      if (tasks.length === 0){
+        setError("Add at least one task !")
+        return;
+      }
+      
+      const results = calculateSchedule(tasks);
+      setResults(results);
+
+      const criticalPath = results
+            .filter(task => task.MT === 0)
+            .map(task => task.id);
+      setCriticalPath(criticalPath)
+    } catch (err){
+      setError(err.message);
+      setResults([]);
+      setCriticalPath([]);
+    }
+  };
 
   const handleAddTask = () => {
     const newId = String.fromCharCode(65 + tasks.length); 
@@ -53,57 +77,60 @@ function App() {
     }
     
     setTasks(updatedTasks);
-  };
-
-  const handleCalculate = () => {
-    try {
-      const calculatedResults = calculateSchedule(tasks);
-      setResults(calculatedResults);
-      
-      const critical = calculatedResults.filter(r => r.MT === 0).map(r => r.id);
-      setCriticalPath(critical);
-    } catch (error) {
-      alert(`Calculation error: ${error.message}`);
-    }
-  };
+  };  
 
   const handleReset = () =>{
     setTasks(initialTasks);
     setResults([]);
     setCriticalPath([]);
   }
+
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>CPM Task Scheduler</h1>
-        <p>Enter tasks, durations, and predecessors, then calculate ES/EF/LS/LF/MT/ML.</p>
-      </header>
+  <div className="app">
+    <header className="app-header">
+      <h1>CPM Task Scheduler</h1>
+      <p>Enter tasks, durations, and predecessors, then calculate ES/EF/LS/LF/MT/ML.</p>
+    </header>
 
-      <main className="app-main">
-        <TaskTable
-          tasks={tasks}
-          onUpdateTask={handleUpdateTask}
-          onDeleteTask={handleDeleteTask}
-        />
-        
-        <ControlPanel
-          onAddTask={handleAddTask}
-          onCalculate={handleCalculate}
-          onReset = {handleReset}
-        />
+    <main className="app-main">
+      <TaskTable
+        tasks={tasks}
+        onUpdateTask={handleUpdateTask}
+        onDeleteTask={handleDeleteTask}
+      />
+      
+      <ControlPanel
+        onAddTask={handleAddTask}
+        onCalculate={handleCalculate}
+        onReset={handleReset}
+      />
 
-        {results.length > 0 && (
-          <>
-            <ResultsTable results={results} />
-            <CriticalPath path={criticalPath} tasks={tasks} />
-          </>
-        )}
+      {error && (
+        <div className="error-message">
+          <strong>Calculation Error:</strong>
+          <div className="error-content">
+            {error.split('\n').map((line, index) => (
+              <div key={index}>{line}</div>
+            ))}
+          </div>
+          <button onClick={() => setError('')} className="btn btn-error">
+            Dismiss
+          </button>
+        </div>
+      )}
 
-        <Formulas />
-        <Footer/>
-      </main>
-    </div>
-  );
+      {results.length > 0 && (
+        <>
+          <ResultsTable results={results} />
+          <CriticalPath path={criticalPath} tasks={tasks} />
+        </>
+      )}
+
+      <Formulas />
+      <Footer/>
+    </main>
+  </div>
+);
 }
 
 export default App;

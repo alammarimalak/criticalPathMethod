@@ -13,6 +13,11 @@ const TaskTable = ({ tasks, onUpdateTask, onDeleteTask }) => {
     }
   };
 
+  const handleDurationChange = (index,value) => {
+    const duration = parseInt(value);
+    duration > 0 ? onUpdateTask(index, "duration", duration) : onUpdateTask(index,"duration",1);
+  }
+
   return (
     <div className="table-container">
       <table className="task-table">
@@ -39,8 +44,9 @@ const TaskTable = ({ tasks, onUpdateTask, onDeleteTask }) => {
                 <input
                   type="text"                  
                   value={task.duration}
-                  onChange={(e) => onUpdateTask(index, 'duration', parseInt(e.target.value) || 0)}
+                  onChange={(e) => handleDurationChange(index, e.target.value)}
                   className="input-field"
+                  placeholder = "Duration >= 1"
                 />
               </td>
               <td>
