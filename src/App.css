@@ -368,10 +368,6 @@ body {
   margin-top: 8px;
 }
 
-.btn-error:hover {
-  background-color: #c82333;
-}
-
 @media (max-width: 768px) {
   .footer-content {
     grid-template-columns: 1fr;
