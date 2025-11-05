@@ -15,8 +15,9 @@ Duration – in days (e.g., 3)
 
 Predecessors – comma-separated IDs (e.g., A,B)
 
-2)Click Calculate Schedule
-3)View results in the table and see the Critical Path highlighted.
+2) Click Calculate Schedule
+
+3) View results in the table and see the Critical Path highlighted.
 
 -------------------------------------------------------------------------------
 ### Run Locally

@@ -15,7 +15,7 @@ const TaskTable = ({ tasks, onUpdateTask, onDeleteTask }) => {
 
   const handleDurationChange = (index,value) => {
     const duration = parseInt(value);
-    duration > 0 ? onUpdateTask(index, "duration", duration) : onUpdateTask(index,"duration",1);
+    duration > 0 ? onUpdateTask(index, "duration", duration) : onUpdateTask(index,"duration");
   }
 
   return (
