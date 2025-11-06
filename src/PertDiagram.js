@@ -3,26 +3,21 @@ import './PertDiagram.css';
 const PertDiagram = ({ results, tasks }) => {
   if (!results || results.length === 0) return null;
 
-  // Constants
   const NODE_RADIUS = 60;
-  const NODE_DIAMETER = NODE_RADIUS * 2;
+  //const NODE_DIAMETER = NODE_RADIUS * 2;
   const LEVEL_SPACING = 280;
   const VERTICAL_SPACING = 200;
   const START_X = 150;
   const START_Y = 300;
 
-  // Create task lookup map for efficiency
   const taskMap = new Map(results.map(t => [t.id, t]));
 
-  // Calculate positions for circular nodes
   const calculateNodePositions = () => {
     const positions = {};
     const levels = {};
     
-    // Add Start node at level 0
     levels[0] = ['START'];
     
-    // Group tasks by their ES (Early Start)
     results.forEach(task => {
       if (!levels[task.EF]) {
         levels[task.EF] = [];
@@ -30,11 +25,9 @@ const PertDiagram = ({ results, tasks }) => {
       levels[task.EF].push(task.id);
     });
 
-    // Add Finish node at the maximum EF
     const maxEF = Math.max(...results.map(task => task.EF));
     levels[maxEF] = ['FINISH'];
 
-    // Calculate positions
     Object.keys(levels).sort((a, b) => a - b).forEach((level, levelIndex) => {
       const tasksInLevel = levels[level];
       
@@ -54,11 +47,9 @@ const PertDiagram = ({ results, tasks }) => {
 
   const nodePositions = calculateNodePositions();
 
-  // Find connections between tasks
   const getConnections = () => {
     const connections = [];
     
-    // Connections from Start node to tasks with no predecessors
     const startTasks = results.filter(task => task.predecessors.length === 0);
     startTasks.forEach(task => {
       if (nodePositions.START && nodePositions[task.id]) {
@@ -73,7 +64,6 @@ const PertDiagram = ({ results, tasks }) => {
       }
     });
 
-    // Connections between tasks
     tasks.forEach(task => {
       task.predecessors.forEach(predId => {
         if (nodePositions[predId] && nodePositions[task.id]) {
@@ -89,7 +79,6 @@ const PertDiagram = ({ results, tasks }) => {
       });
     });
 
-    // Connections to Finish node
   const tasksWithSuccessors = new Set();
   results.forEach(task => {
     task.predecessors.forEach(predId => tasksWithSuccessors.add(predId));
@@ -115,7 +104,6 @@ const PertDiagram = ({ results, tasks }) => {
 
   const connections = getConnections();
 
-  // Get task data for rendering
   const getTaskData = (taskId) => {
     if (taskId === 'START') {
       return { id: 'START', ES: 0, LS: 0, EF: 0, LF: 0, MT: 0, duration: 0 };
@@ -129,7 +117,6 @@ const PertDiagram = ({ results, tasks }) => {
 
   const allNodeIds = ['START', ...results.map(task => task.id), 'FINISH'].filter(id => nodePositions[id]);
 
-  // Calculate SVG dimensions
   const maxX = Math.max(...Object.values(nodePositions).map(p => p.x)) + 200;
   const maxY = Math.max(...Object.values(nodePositions).map(p => p.y)) + NODE_RADIUS + 50;
   const minY = Math.min(...Object.values(nodePositions).map(p => p.y)) - NODE_RADIUS - 50;
@@ -140,32 +127,26 @@ const PertDiagram = ({ results, tasks }) => {
       <h3>Diagramme PERT</h3>
       <div className="pert-diagram-wrapper">
         <svg width={maxX} height={svgHeight} viewBox={`0 ${minY} ${maxX} ${svgHeight}`} className="pert-svg">
-          {/* Draw connections (arrows) */}
           {connections.map((conn, index) => {
             const dx = conn.toPos.x - conn.fromPos.x;
             const dy = conn.toPos.y - conn.fromPos.y;
             const angle = Math.atan2(dy, dx);
             
-            // Start from edge of circle
             const fromX = conn.fromPos.x + NODE_RADIUS * Math.cos(angle);
             const fromY = conn.fromPos.y + NODE_RADIUS * Math.sin(angle);
             
-            // End at edge of circle
             const toX = conn.toPos.x - NODE_RADIUS * Math.cos(angle);
             const toY = conn.toPos.y - NODE_RADIUS * Math.sin(angle);
             
-            // Arrow head position
             const arrowX = toX - 15 * Math.cos(angle);
             const arrowY = toY - 15 * Math.sin(angle);
             
-            // Label position
             const midX = (fromX + toX) / 2;
             const midY = (fromY + toY) / 2;
             const labelOffsetY = dy > 0 ? -15 : 25;
             
             return (
               <g key={`conn-${index}`} className="connection-group">
-                {/* Arrow line */}
                 <line
                   x1={fromX}
                   y1={fromY}
@@ -178,7 +159,6 @@ const PertDiagram = ({ results, tasks }) => {
                     ? 'critical-path' : ''}`}
                 />
                 
-                {/* Arrow head */}
                 <polygon
                   points={`
                     ${toX},${toY}
@@ -192,7 +172,6 @@ const PertDiagram = ({ results, tasks }) => {
                     ? 'critical-path' : ''}`}
                 />
                 
-                {/* Task label on arrow */}
                 {!conn.isFinish && (
                   <text
                     x={midX}
@@ -216,7 +195,6 @@ const PertDiagram = ({ results, tasks }) => {
             );
           })}
           
-          {/* Draw circular nodes */}
           {allNodeIds.map((taskId) => {
             const task = getTaskData(taskId);
             const position = nodePositions[taskId];
@@ -239,7 +217,6 @@ const PertDiagram = ({ results, tasks }) => {
                   }`}
                 />
                 
-                {/* Vertical divider */}
                 <line
                   x1={position.x}
                   y1={position.y - NODE_RADIUS}
@@ -248,7 +225,6 @@ const PertDiagram = ({ results, tasks }) => {
                   className="node-divider"
                 />
                 
-                {/* Horizontal divider */}
                 <line
                   x1={position.x - NODE_RADIUS}
                   y1={position.y}
@@ -257,7 +233,6 @@ const PertDiagram = ({ results, tasks }) => {
                   className="node-divider"
                 />
                 
-                {/* Top-left: ES (green) */}
                 <text
                   x={position.x - NODE_RADIUS / 2}
                   y={position.y - NODE_RADIUS / 4}
@@ -268,7 +243,6 @@ const PertDiagram = ({ results, tasks }) => {
                   {task.EF}
                 </text>
                 
-                {/* Top-right: LS (red) */}
                 <text
                   x={position.x + NODE_RADIUS / 2}
                   y={position.y - NODE_RADIUS / 4}
@@ -279,7 +253,6 @@ const PertDiagram = ({ results, tasks }) => {
                   {task.LF}
                 </text>
                 
-                {/* Center: Task ID (blue) */}
                 <text
                   x={position.x}
                   y={position.y + 25}
