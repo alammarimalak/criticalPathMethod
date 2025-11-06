@@ -4,7 +4,7 @@ const TaskTable = ({ tasks, onUpdateTask, onDeleteTask }) => {
     if (duration > 0) {
       onUpdateTask(index, 'duration', duration);
     } else {
-      onUpdateTask(index, 'duration', 1);
+      onUpdateTask(index, 'duration');
     }
   };
 
@@ -53,8 +53,7 @@ const TaskTable = ({ tasks, onUpdateTask, onDeleteTask }) => {
                 </td>
                 <td>
                   <input
-                    type="text"
-                    min="1"
+                    type="text"                    
                     value={task.duration}
                     onChange={(e) => handleDurationChange(index, e.target.value)}
                     className="input-field"

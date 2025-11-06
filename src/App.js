@@ -35,6 +35,7 @@ function App() {
             .filter(task => task.MT === 0)
             .map(task => task.id);
       setCriticalPath(criticalPath)
+
     } catch (err){
       setError(err.message);
       setResults([]);
@@ -44,7 +45,7 @@ function App() {
 
   const handleAddTask = () => {
     const newId = String.fromCharCode(65 + tasks.length); 
-    setTasks(prev => [...prev, { id: newId, duration: 1, predecessors: [] }]);
+    setTasks(prev => [...prev, { id: newId, duration: null, predecessors: [] }]);
   };
 
   const handleDeleteTask = (index) => {
@@ -66,10 +67,10 @@ function App() {
       };
     } else if (field === 'duration') {
       
-      const duration = parseInt(value) || 1;
+      const duration = parseInt(value) || null;
       updatedTasks[index] = {
         ...updatedTasks[index],
-        [field]: Math.max(1, duration) 
+        [field]:  duration 
       };
     } else if (field === 'id') {
       const newId = value.trim();
