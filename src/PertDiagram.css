@@ -1,0 +1,112 @@
+.pert-diagram-container {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border: 2px solid #e9ecef;
+}
+
+.pert-diagram-container h3 {
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.pert-diagram-wrapper {
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: white;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border: 1px solid #dee2e6;
+  max-width: 100%;
+}
+
+.pert-svg {
+  background: white;
+  border-radius: 6px;
+}
+
+.connection-line {
+  stroke: #000;
+  stroke-width: 2;
+  fill: none;
+}
+
+.arrow-head {
+  fill: #000;
+  stroke: #000;
+  stroke-width: 1;
+}
+
+.connection-label {
+  fill: #0066cc;
+  font-size: 14px;
+  font-weight: 600;
+  font-style: italic;
+}
+
+.connection-duration {
+  fill: #000;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.node-circle {
+  fill: white;
+  stroke: #000;
+  stroke-width: 2.5;
+}
+
+.critical-node {
+  fill: #fff9e6;
+}
+
+.milestone-node {
+  fill: #f0f0f0;
+}
+
+.node-divider {
+  stroke: #000;
+  stroke-width: 2;
+}
+
+.node-date {
+  font-size: 13px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.node-es,
+.node-ef {
+  fill: #00aa00;
+}
+
+.node-ls,
+.node-lf {
+  fill: #dd0000;
+}
+
+.node-task-id {
+  fill: #0066cc;
+  font-size: 16px;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+.connection-group {
+  pointer-events: none;
+}
+
+.connection-line.critical-path {
+  stroke: #dd0000;
+  stroke-width: 3;
+}
+
+.arrow-head.critical-path {
+  fill: #dd0000;
+  stroke: #dd0000;
+}

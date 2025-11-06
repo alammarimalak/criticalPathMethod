@@ -5,6 +5,7 @@ import ResultsTable from './ResultsTable';
 import CriticalPath from './CriticalPath';
 import Formulas from './Formulas';
 import { calculateSchedule } from './CalculateSchedule';
+import PertDiagram from './PertDiagram';
 import Footer from './Footer'
 import './App.css';
 
@@ -140,10 +141,11 @@ function App() {
             Dismiss
           </button>
         </div>
-      )}
+      )}      
 
       {results.length > 0 && (
         <>
+          <PertDiagram results={results} tasks={tasks} />
           <ResultsTable results={results} />
           <CriticalPath path={criticalPath} tasks={tasks} />
         </>
