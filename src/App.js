@@ -10,8 +10,8 @@ import Footer from './Footer'
 import './App.css';
 
 const initialTasks = [
-  //  { id: "A", duration: 3, predecessors: [] },
-  //  { id: "B", duration: 2, predecessors: ["A"] },
+    { id: "A", duration: 3, predecessors: [] },
+    { id: "B", duration: 2, predecessors: ["A"] },
 ];
 
 function App() {

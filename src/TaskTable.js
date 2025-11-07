@@ -1,4 +1,8 @@
+import React from 'react';
+
 const TaskTable = ({ tasks, onUpdateTask, onDeleteTask }) => {
+  const [predecessorInputs, setPredecessorInputs] = React.useState({});
+
   const handleDurationChange = (index, value) => {
     const duration = parseInt(value);
     if (duration > 0) {
@@ -10,6 +14,18 @@ const TaskTable = ({ tasks, onUpdateTask, onDeleteTask }) => {
 
   const handleIdChange = (index, value) => {
     onUpdateTask(index, 'id', value);
+  };
+
+  const handlePredecessorChange = (index, value) => {
+    setPredecessorInputs(prev => ({ ...prev, [index]: value }));
+    onUpdateTask(index, 'predecessors', value);
+  };
+
+  const getPredecessorValue = (index, task) => {
+    if (predecessorInputs.hasOwnProperty(index)) {
+      return predecessorInputs[index];
+    }
+    return task.predecessors.length > 0 ? task.predecessors.join(', ') : '';
   };
 
   const isDuplicateId = (taskIndex, taskId) => {
@@ -63,10 +79,11 @@ const TaskTable = ({ tasks, onUpdateTask, onDeleteTask }) => {
                 <td>
                   <input
                     type="text"
-                    value={task.predecessors.join(', ')}
-                    onChange={(e) => onUpdateTask(index, 'predecessors', e.target.value)}
+                    value={getPredecessorValue(index, task)}
+                    onChange={(e) => handlePredecessorChange(index, e.target.value)}
                     className="input-field"
-                    placeholder="A, B, C"
+                    placeholder={index === 0 ? "-" : "A, B, C"}
+                    disabled={index === 0}
                   />
                 </td>
                 <td>
