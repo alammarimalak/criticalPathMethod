@@ -10,6 +10,33 @@ const PertDiagram = ({ results, tasks }) => {
   const START_Y = 300;
 
   const taskMap = new Map(results.map(t => [t.id, t]));
+  const maxEF = Math.max(...results.map(t => t.EF));
+
+  const finalTaskIds = new Set(results.map(t => t.id));
+  results.forEach(task => {
+    task.predecessors.forEach(predId => {
+      finalTaskIds.delete(predId);
+    });
+  });
+
+  const finalTasks = Array.from(finalTaskIds)
+    .map(id => taskMap.get(id))
+    .filter(Boolean);
+
+  const danglingTasks = finalTasks.filter(task => task.LF !== maxEF);
+
+  if (danglingTasks.length > 0) {
+    return (
+      <div className="pert-diagram-container" style={{ padding: '20px', border: '1px solid #C70039', color: '#C70039', backgroundColor: '#FFF5F5' }}>
+        <h3>Erreur de Données PERT</h3>
+        <p>
+          Le diagramme ne peut pas être affiché car les tâches suivantes ne
+          mènent pas correctement à la fin du projet (tâches en suspens) :
+          <strong> {danglingTasks.map(t => t.id).join(', ')}</strong>
+        </p>
+      </div>
+    );
+  }
 
   const calculateNodePositions = () => {
     const positions = {};
@@ -135,7 +162,6 @@ const PertDiagram = ({ results, tasks }) => {
     if (id === 'START')
       return { id: 'START', ES: 0, EF: 0, LS: 0, LF: 0, MT: 0, duration: 0 };
     if (id === 'FINISH') {
-      const maxEF = Math.max(...results.map(t => t.EF));
       return {
         id: 'FINISH',
         ES: maxEF,

@@ -4,7 +4,6 @@ export const calculateSchedule = (tasks) => {
   const validationErrors = [];
   const taskIds = new Set();
   
-  // Phase 1: Basic validation (ID uniqueness, duration validity)
   tasks.forEach((task, index) => {
     if (!task.id || task.id.trim() === '') {
       validationErrors.push(`Task at position ${index + 1} has no ID`);
@@ -30,7 +29,6 @@ export const calculateSchedule = (tasks) => {
     throw new Error(validationErrors.join('\n'));
   }
 
-  // Phase 2: Build task map and validate predecessors exist
   const taskMap = {};
   tasks.forEach(task => {
     taskMap[task.id] = { 
@@ -44,14 +42,12 @@ export const calculateSchedule = (tasks) => {
     };
   });
 
-  // Validate all predecessors exist and check for self-predecessors
   tasks.forEach(task => {
     const invalidPreds = task.predecessors.filter(p => !taskMap[p]);
     if (invalidPreds.length > 0) {
       validationErrors.push(`Task "${task.id}" has invalid predecessors: ${invalidPreds.join(', ')}. Valid task IDs are: ${tasks.map(t => t.id).join(', ')}`);
     }
     
-    // Check for self-predecessor
     if (task.predecessors.includes(task.id)) {
       validationErrors.push(`Task "${task.id}" cannot be its own predecessor`);
     }
@@ -61,7 +57,6 @@ export const calculateSchedule = (tasks) => {
     throw new Error(validationErrors.join('\n'));
   }
 
-  // Phase 3: Check for start and end tasks
   const startTasks = tasks.filter(t => t.predecessors.length === 0);
   if (startTasks.length === 0) {
     validationErrors.push('No start task found. At least one task must have no predecessors.');
@@ -85,7 +80,6 @@ export const calculateSchedule = (tasks) => {
     throw new Error(validationErrors.join('\n'));
   }
 
-  // Phase 4: Check for circular dependencies using DFS
   const detectCycle = () => {
     const visited = new Set();
     const recursionStack = new Set();
@@ -104,7 +98,6 @@ export const calculateSchedule = (tasks) => {
               return true;
             }
           } else if (recursionStack.has(predId)) {
-            // Found a cycle - build the cycle path
             const cycleStart = path.indexOf(predId);
             const cyclePath = [...path.slice(cycleStart), predId];
             validationErrors.push(`Circular dependency detected: ${cyclePath.join(' → ')}`);
@@ -132,18 +125,15 @@ export const calculateSchedule = (tasks) => {
     throw new Error(validationErrors.join('\n'));
   }
 
-  // Phase 5: Topological sort to process tasks in correct order
   const topologicalSort = () => {
     const inDegree = {};
     const adjList = {};
     
-    // Initialize
     tasks.forEach(task => {
       inDegree[task.id] = task.predecessors.length;
       adjList[task.id] = [];
     });
 
-    // Build adjacency list (forward direction)
     tasks.forEach(task => {
       task.predecessors.forEach(predId => {
         adjList[predId].push(task.id);
@@ -153,7 +143,6 @@ export const calculateSchedule = (tasks) => {
     const queue = [];
     const sorted = [];
 
-    // Find all tasks with no predecessors
     Object.keys(inDegree).forEach(taskId => {
       if (inDegree[taskId] === 0) {
         queue.push(taskId);
@@ -181,7 +170,6 @@ export const calculateSchedule = (tasks) => {
 
   const sortedTaskIds = topologicalSort();
 
-  // Phase 6: Forward pass (ES, EF) in topological order
   sortedTaskIds.forEach(taskId => {
     const currentTask = taskMap[taskId];
     
@@ -193,7 +181,6 @@ export const calculateSchedule = (tasks) => {
     currentTask.EF = currentTask.ES + currentTask.duration;
   });
 
-  // Phase 7: Backward pass (LF, LS) in reverse topological order
   const maxEF = Math.max(...sortedTaskIds.map(id => taskMap[id].EF));
   
   [...sortedTaskIds].reverse().forEach(taskId => {
@@ -207,14 +194,11 @@ export const calculateSchedule = (tasks) => {
     currentTask.LS = currentTask.LF - currentTask.duration;
   });
 
-  // Phase 8: Calculate float/slack
   sortedTaskIds.forEach(taskId => {
     const currentTask = taskMap[taskId];
     
-    // Total Float
     currentTask.MT = currentTask.LS - currentTask.ES;
     
-    // Free Float
     if (!successorMap[taskId] || successorMap[taskId].length === 0) {
       currentTask.ML = 0;
     } else {
