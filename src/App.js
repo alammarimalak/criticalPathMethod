@@ -28,7 +28,7 @@ function App() {
         setError("Add at least one task !")
         return;
       }
-
+      
       if (tasks.length > 1) {
         const tasksWithSuccessors = new Set();
         tasks.forEach(task => {
@@ -51,12 +51,9 @@ function App() {
           return; 
         }
       }
-      
+            
       const results = calculateSchedule(tasks);
-
-      const maxEF = Math.max(...results.map(t => t.EF));
-      const taskMap = new Map(results.map(t => [t.id, t]));
-
+      
       const finalTaskIds = new Set(results.map(t => t.id));
       results.forEach(task => {
         task.predecessors.forEach(predId => {
@@ -64,16 +61,10 @@ function App() {
         });
       });
 
-      const finalTasks = Array.from(finalTaskIds)
-        .map(id => taskMap.get(id))
-        .filter(Boolean);
-
-      const danglingTasks = finalTasks.filter(task => task.LF !== maxEF);
-
-      if (danglingTasks.length > 0) {
-        const danglingTaskIds = danglingTasks.map(t => t.id).join(', ');
+      if (finalTaskIds.size > 1) {
+        const finalTaskIdsList = Array.from(finalTaskIds).join(', ');
         setError(
-          `Le diagramme ne peut pas être affiché car les tâches suivantes ne mènent pas correctement à la fin du projet (tâches en suspens) : ${danglingTaskIds}`
+          `Logic error: The project must converge to a single final task. The following tasks do not have successors: ${finalTaskIdsList}`
         );
         setResults([]);
         setCriticalPath([]);

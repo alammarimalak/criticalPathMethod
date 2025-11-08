@@ -10,20 +10,13 @@ const PertDiagram = ({ results, tasks }) => {
   const START_Y = 300;
 
   const taskMap = new Map(results.map(t => [t.id, t]));
+
   const maxEF = Math.max(...results.map(t => t.EF));
 
-  const finalTaskIds = new Set(results.map(t => t.id));
-  results.forEach(task => {
-    task.predecessors.forEach(predId => {
-      finalTaskIds.delete(predId);
-    });
+  const danglingTasks = results.filter(task => {
+    const hasSuccessors = results.some(succ => succ.predecessors.includes(task.id));
+    return !hasSuccessors && task.LF !== maxEF;
   });
-
-  const finalTasks = Array.from(finalTaskIds)
-    .map(id => taskMap.get(id))
-    .filter(Boolean);
-
-  const danglingTasks = finalTasks.filter(task => task.LF !== maxEF);
 
   if (danglingTasks.length > 0) {
     return (
@@ -90,7 +83,6 @@ const PertDiagram = ({ results, tasks }) => {
 
   const getConnections = () => {
     const connections = [];
-
     const sortedTasks = results.sort((a, b) => a.EF - b.EF);
     const startTasks = results.filter(t => t.predecessors.length === 0);
 
@@ -126,32 +118,51 @@ const PertDiagram = ({ results, tasks }) => {
       }
     });
 
-    sortedTasks.forEach(task => {
-      const successors = results.filter(t => t.predecessors.includes(task.id));
-      if (successors.length === 0 && nodePositions[task.id] && nodePositions.FINISH) {
-        const predId = task.predecessors[0];
+    // --- START: Fixed logic for final tasks ---
+    const finalTasks = sortedTasks.filter(task =>
+      results.every(t => !t.predecessors.includes(task.id))
+    );
 
-        if (predId && nodePositions[predId]) {
-          connections.push({
-            from: predId,
-            to: 'FINISH',
-            duration: task.duration,
-            fromPos: nodePositions[predId],
-            toPos: nodePositions.FINISH,
-            label: task.id,
-          });
-        } else if (task.predecessors.length === 0) {
-          connections.push({
-            from: 'START',
-            to: 'FINISH',
-            duration: task.duration,
-            fromPos: nodePositions.START,
-            toPos: nodePositions.FINISH,
-            label: task.id,
-          });
-        }
+    const predecessorGroups = new Map();
+    finalTasks.forEach(task => {
+      const predId = task.predecessors.length > 0 ? task.predecessors[0] : 'START';
+      if (!predecessorGroups.has(predId)) {
+        predecessorGroups.set(predId, []);
       }
+      predecessorGroups.get(predId).push(task);
     });
+
+    predecessorGroups.forEach((tasksInGroup, predId) => {
+      const fromPos = nodePositions[predId];
+      const toPos = nodePositions.FINISH;
+      if (!fromPos || !toPos) return;
+
+      const totalTasks = tasksInGroup.length;
+      const ARROW_OFFSET = 35; // Vertical offset for each arrow
+
+      tasksInGroup.forEach((task, index) => {
+        let verticalOffset = 0;
+        if (totalTasks > 1) {
+          verticalOffset = (index - (totalTasks - 1) / 2) * ARROW_OFFSET;
+        }
+
+        const offsetFromPos = { x: fromPos.x, y: fromPos.y + verticalOffset };
+        const offsetToPos = { x: toPos.x, y: toPos.y + verticalOffset };
+
+        // Don't offset the 'from' position if it's the START node
+        const finalFromPos = predId === 'START' ? fromPos : offsetFromPos;
+
+        connections.push({
+          from: predId,
+          to: 'FINISH',
+          duration: task.duration,
+          fromPos: finalFromPos,
+          toPos: offsetToPos,
+          label: task.id,
+        });
+      });
+    });
+    // --- END: Fixed logic for final tasks ---
 
     return connections;
   };
@@ -189,11 +200,15 @@ const PertDiagram = ({ results, tasks }) => {
       const hasSuccessors = results.some(t => t.predecessors.includes(task.id));
       return hasSuccessors;
     });
-
+  
+  const allYCoords = Object.values(nodePositions).map(p => p.y);
+  const connectionYCoords = connections.flatMap(c => [c.fromPos.y, c.toPos.y]);
+  
   const maxX = Math.max(...Object.values(nodePositions).map(p => p.x)) + 200;
-  const maxY = Math.max(...Object.values(nodePositions).map(p => p.y)) + NODE_RADIUS + 50;
-  const minY = Math.min(...Object.values(nodePositions).map(p => p.y)) - NODE_RADIUS - 50;
-  const svgHeight = maxY - minY;
+  const maxY = Math.max(...allYCoords, ...connectionYCoords) + NODE_RADIUS + 50;
+  const minY = Math.min(...allYCoords, ...connectionYCoords) - NODE_RADIUS - 50;
+  
+  const svgHeight = Math.max(maxY - minY, 500);
 
   return (
     <div className="pert-diagram-container">
@@ -210,7 +225,7 @@ const PertDiagram = ({ results, tasks }) => {
             const dy = conn.toPos.y - conn.fromPos.y;
             const angle = Math.atan2(dy, dx);
 
-            const startOffset = NODE_RADIUS;
+            const startOffset = (conn.from === 'START' || conn.to === 'FINISH') ? NODE_RADIUS : NODE_RADIUS;
 
             const fromX = conn.fromPos.x + startOffset * Math.cos(angle);
             const fromY = conn.fromPos.y + startOffset * Math.sin(angle);
@@ -218,10 +233,14 @@ const PertDiagram = ({ results, tasks }) => {
             const toY = conn.toPos.y - NODE_RADIUS * Math.sin(angle);
             const arrowX = toX - 15 * Math.cos(angle);
             const arrowY = toY - 15 * Math.sin(angle);
-            const midX = (fromX + toX) / 2;
-            const midY = (fromY + toY) / 2;
-            const labelOffsetY = dy > 0 ? -15 : 25;
-
+            
+            // Adjust midX and midY for label placement
+            const textPathLength = Math.hypot(toX - fromX, toY - fromY);
+            const midX = fromX + (textPathLength / 2) * Math.cos(angle);
+            const midY = fromY + (textPathLength / 2) * Math.sin(angle);
+            
+            const labelOffsetY = dy === 0 ? -15 : (dy > 0 ? -15 : 25);
+            
             return (
               <g key={`conn-${i}`} className="connection-group">
                 <line
@@ -257,7 +276,7 @@ const PertDiagram = ({ results, tasks }) => {
             if (!pos || !task) return null;
 
             const isStart = id === 'START';
-            const isFinish = id === 'FINISH';
+            const isFinish = id === 'FINISH'; // <-- This was the line with the error
 
             return (
               <g key={`node-${id}`} className="node-group">
