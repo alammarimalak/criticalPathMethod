@@ -1,14 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 const TaskTable = ({ tasks, onUpdateTask, onDeleteTask }) => {
   const [predecessorInputs, setPredecessorInputs] = React.useState({});
+
+  useEffect(() => {
+    const firstTask = tasks[0];
+    if (firstTask && firstTask.predecessors.length > 0) {      
+      onUpdateTask(0, 'predecessors', '');      
+      setPredecessorInputs(prev => ({ ...prev, 0: '-' }));
+    }
+  }, [tasks, onUpdateTask]); 
 
   const handleDurationChange = (index, value) => {
     const duration = parseInt(value);
     if (duration > 0) {
       onUpdateTask(index, 'duration', duration);
     } else {
-      onUpdateTask(index, 'duration');
+      onUpdateTask(index, 'duration'); 
     }
   };
 
@@ -21,7 +29,10 @@ const TaskTable = ({ tasks, onUpdateTask, onDeleteTask }) => {
     onUpdateTask(index, 'predecessors', value);
   };
 
-  const getPredecessorValue = (index, task) => {
+  const getPredecessorValue = (index, task) => {    
+    if (index === 0) {
+      return '';
+    }
     if (predecessorInputs.hasOwnProperty(index)) {
       return predecessorInputs[index];
     }
@@ -70,7 +81,7 @@ const TaskTable = ({ tasks, onUpdateTask, onDeleteTask }) => {
                 <td>
                   <input
                     type="text"                    
-                    value={task.duration}
+                    value={task.duration || ''} 
                     onChange={(e) => handleDurationChange(index, e.target.value)}
                     className="input-field"
                     placeholder="Duration (≥1)"
