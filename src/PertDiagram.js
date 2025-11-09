@@ -270,13 +270,13 @@ const PertDiagram = ({ results, tasks }) => {
             );
           })}
 
-          {visualNodeIds.map(id => {
+          {visualNodeIds.map((id,index)=> {
             const task = getTaskData(id);
             const pos = nodePositions[id];
             if (!pos || !task) return null;
 
             const isStart = id === 'START';
-            const isFinish = id === 'FINISH'; // <-- This was the line with the error
+            const isFinish = id === 'FINISH'; 
 
             return (
               <g key={`node-${id}`} className="node-group">
@@ -327,7 +327,7 @@ const PertDiagram = ({ results, tasks }) => {
                   textAnchor="middle"
                   dominantBaseline="middle"
                 >
-                  {isStart ? 'Start' : isFinish ? 'Finish' : task.id}
+                  {isStart ? 'Start' : isFinish ? 'End' : index}
                 </text>
               </g>
             );

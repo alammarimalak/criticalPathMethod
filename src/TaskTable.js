@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
+import { useEffect,useState } from 'react';
 
 const TaskTable = ({ tasks, onUpdateTask, onDeleteTask }) => {
-  const [predecessorInputs, setPredecessorInputs] = React.useState({});
+  const [predecessorInputs, setPredecessorInputs] = useState({});
 
   useEffect(() => {
     const firstTask = tasks[0];
