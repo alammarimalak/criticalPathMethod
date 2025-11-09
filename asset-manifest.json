@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/criticalPathMethod/static/css/main.e880a214.css",
-    "main.js": "/criticalPathMethod/static/js/main.0cd46c82.js",
+    "main.js": "/criticalPathMethod/static/js/main.7a128efe.js",
     "index.html": "/criticalPathMethod/index.html",
     "main.e880a214.css.map": "/criticalPathMethod/static/css/main.e880a214.css.map",
-    "main.0cd46c82.js.map": "/criticalPathMethod/static/js/main.0cd46c82.js.map"
+    "main.7a128efe.js.map": "/criticalPathMethod/static/js/main.7a128efe.js.map"
   },
   "entrypoints": [
     "static/css/main.e880a214.css",
-    "static/js/main.0cd46c82.js"
+    "static/js/main.7a128efe.js"
   ]
 }
