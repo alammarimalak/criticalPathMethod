@@ -118,7 +118,6 @@ const PertDiagram = ({ results, tasks }) => {
       }
     });
 
-    // --- START: Fixed logic for final tasks ---
     const finalTasks = sortedTasks.filter(task =>
       results.every(t => !t.predecessors.includes(task.id))
     );
@@ -149,7 +148,6 @@ const PertDiagram = ({ results, tasks }) => {
         const offsetFromPos = { x: fromPos.x, y: fromPos.y + verticalOffset };
         const offsetToPos = { x: toPos.x, y: toPos.y + verticalOffset };
 
-        // Don't offset the 'from' position if it's the START node
         const finalFromPos = predId === 'START' ? fromPos : offsetFromPos;
 
         connections.push({
@@ -162,7 +160,6 @@ const PertDiagram = ({ results, tasks }) => {
         });
       });
     });
-    // --- END: Fixed logic for final tasks ---
 
     return connections;
   };
@@ -234,7 +231,6 @@ const PertDiagram = ({ results, tasks }) => {
             const arrowX = toX - 15 * Math.cos(angle);
             const arrowY = toY - 15 * Math.sin(angle);
             
-            // Adjust midX and midY for label placement
             const textPathLength = Math.hypot(toX - fromX, toY - fromY);
             const midX = fromX + (textPathLength / 2) * Math.cos(angle);
             const midY = fromY + (textPathLength / 2) * Math.sin(angle);
