@@ -137,7 +137,7 @@ const PertDiagram = ({ results, tasks }) => {
       if (!fromPos || !toPos) return;
 
       const totalTasks = tasksInGroup.length;
-      const ARROW_OFFSET = 35; // Vertical offset for each arrow
+      const ARROW_OFFSET = 35; 
 
       tasksInGroup.forEach((task, index) => {
         let verticalOffset = 0;

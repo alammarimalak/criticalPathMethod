@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import  {useState}  from 'react';
 import TaskTable from './TaskTable';
 import ControlPanel from './ControlPanel';
 import ResultsTable from './ResultsTable';
 import CriticalPath from './CriticalPath';
 import Formulas from './Formulas';
-import { calculateSchedule } from './CalculateSchedule';
+import  {calculateSchedule}  from './CalculateSchedule';
 import PertDiagram from './PertDiagram';
 import Footer from './Footer'
 import './App.css';
@@ -152,6 +152,10 @@ function App() {
 
   return (
   <div className="app">
+     
+    <a href="https://ko-fi.com/malakalammari" target="_blank" rel="noopener noreferrer" className="btn kofi-btn" >
+      Buy me a Ko-fi ☕
+    </a>
     <header className="app-header">
       <h1>CPM Task Scheduler</h1>
       <p>Enter tasks, durations, and predecessors, then calculate ES/EF/LS/LF/MT/ML.</p>

@@ -41,6 +41,7 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+  position: relative;
 }
 
 .app-header {
@@ -366,6 +367,23 @@ body {
   cursor: pointer;
   font-size: 0.9em;
   margin-top: 8px;
+}
+
+
+.kofi-btn {
+  position: absolute;
+  top: 2rem; 
+  right: 2rem; 
+  background-color: #FBAA19; 
+  color: #1a202c;
+  font-weight: 700;
+  z-index: 10; 
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.kofi-btn:hover {
+  background-color: #f7b944; 
+  color: #000;
 }
 
 @media (max-width: 768px) {
