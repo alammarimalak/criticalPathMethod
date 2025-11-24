@@ -1,4 +1,3 @@
-import React from 'react';
 import './PertDiagram.css';
 
 const PertDiagram = ({ results = [], tasks }) => {
@@ -15,22 +14,22 @@ const PertDiagram = ({ results = [], tasks }) => {
   const taskMap = new Map(results.map(t => [t.id, t]));
   const maxEF = Math.max(...results.map(t => t.EF || 0), 0);
 
-  // Build events and connections using Option B + minimal dummies heuristic:
-  // - For tasks with multiple predecessors we try to reuse the latest predecessor's end event
-  //   (the predecessor with the largest EF) as the merge/start event for the task.
-  // - All other predecessor end events get a dummy curved connection to that chosen start event.
-  // - This avoids creating unnecessary merge nodes between predecessors (no redundant nodes between C and D).
+  // Helper: normalize predecessor lists
+  const normalizePreds = (preds) =>
+    (preds || [])
+      .map(p => (typeof p === 'string' ? p.trim() : p))
+      .filter(p => p && p !== '-' && p !== '0');
+
+  // -------------------------
+  // buildEventGraph
+  // -------------------------
   const buildEventGraph = () => {
     let eventCounter = 0;
-    const eventsByKey = new Map(); // key => event {id, predIds}
+    const eventsByKey = new Map(); // key -> { id, predIds }
     const connections = [];
 
-    const makeKey = (arr) => {
-      if (!arr || arr.length === 0) return '';
-      return [...arr].sort().join(',');
-    };
+    const makeKey = (arr = []) => (arr.length === 0 ? '' : [...arr].sort().join(','));
 
-    // Create or return an event for a predecessor set (keyed by sorted pred IDs)
     const getOrCreateEventForPreds = (predIds = []) => {
       const key = makeKey(predIds);
       if (eventsByKey.has(key)) return eventsByKey.get(key);
@@ -40,138 +39,127 @@ const PertDiagram = ({ results = [], tasks }) => {
       return ev;
     };
 
-    // START event
+    // START
     const startEvent = getOrCreateEventForPreds([]);
     startEvent.id = 'START';
     startEvent.key = '';
 
-    // We'll assign each task:
-    //  - _fromEventId: id of the event it starts from
-    //  - _toEventId: id of the event it finishes at (unique keyed by [task.id])
-    // We'll process tasks iteratively in topological-like order: pick tasks whose predecessors' end events exist
-    const assignedTasks = new Set();
-    const pending = new Map(results.map(t => [t.id, t]));
+    // local copy map for assignment logic
+    const allTasks = new Map(results.map(t => [t.id, t]));
+    const assigned = new Set();
+
     const maxIterations = results.length * 5;
     let iter = 0;
 
-    while (assignedTasks.size < results.length && iter++ < maxIterations) {
-      for (const task of results) {
-        if (assignedTasks.has(task.id)) continue;
+    while (assigned.size < results.length && iter++ < maxIterations) {
+      let progress = false;
 
-        const preds = (task.predecessors || []).filter(p => p && p !== '-');
-        // If task has predecessors that haven't been assigned yet, skip
-        const predsNotAssigned = preds.some(p => !assignedTasks.has(p) && !pending.has(p) && !taskMap.has(p));
-        // Actually only require that the predecessor's end event has been created (we use _toEventId)
-        const predsHaveEndEvents = preds.every(p => {
-          // if predecessor isn't a known task (shouldn't happen normally) treat as existing
-          if (!taskMap.has(p)) return true;
-          const predTask = taskMap.get(p);
-          return !!predTask._toEventId;
+      for (const task of results) {
+        if (assigned.has(task.id)) continue;
+
+        const preds = normalizePreds(task.predecessors);
+        
+        const predsReady = preds.every(pid => {
+          if (!allTasks.has(pid)) return true;
+          return !!allTasks.get(pid)._toEventId;
         });
 
-        if (!predsHaveEndEvents) continue;
+        if (!predsReady) continue;
 
-        // Determine start event:
         let fromEventId = 'START';
-        if (preds.length === 0) {
-          fromEventId = 'START';
-        } else if (preds.length === 1) {
-          // single predecessor — start at its end event
-          const pred = preds[0];
-          const predTask = taskMap.get(pred);
-          fromEventId = predTask._toEventId;
-        } else {
-          // multiple predecessors — choose the 'primary' predecessor end event to reuse:
-          // heuristic: choose predecessor with max EF (latest finishing predecessor).
-          let primaryPred = preds[0];
-          let primaryEF = taskMap.get(primaryPred)?.EF || 0;
+
+        if (preds.length === 1) {
+          const predTask = allTasks.get(preds[0]);
+          fromEventId = predTask ? predTask._toEventId : 'START';
+        } else if (preds.length >= 2) {
+          let primary = preds[0];
+          let primaryEF = allTasks.get(primary)?.EF || 0;
           for (const p of preds) {
-            const ef = taskMap.get(p)?.EF || 0;
+            const ef = allTasks.get(p)?.EF || 0;
             if (ef > primaryEF) {
               primaryEF = ef;
-              primaryPred = p;
+              primary = p;
             }
           }
-          const primaryPredTask = taskMap.get(primaryPred);
-          const primaryEndEvent = primaryPredTask ? primaryPredTask._toEventId : 'START';
-          fromEventId = primaryEndEvent;
 
-          // create dummy connections from all other predecessor end events to the chosen start event
-          preds.forEach(p => {
-            if (p === primaryPred) return;
-            const predTask = taskMap.get(p);
-            const predEndEvent = predTask ? predTask._toEventId : null;
-            if (!predEndEvent) return;
-            // don't create dummy if it would be a self loop
-            if (predEndEvent === fromEventId) return;
-            const exists = connections.some(c => c.from === predEndEvent && c.to === fromEventId);
-            if (!exists) {
-              connections.push({
-                from: predEndEvent,
-                to: fromEventId,
-                taskId: null,
-                duration: 0,
-                isDummy: true
-              });
+          const primaryTask = allTasks.get(primary);
+          fromEventId = primaryTask ? primaryTask._toEventId : 'START';
+
+          const predEndEvents = preds
+            .map(p => allTasks.get(p)?._toEventId || null)
+            .filter(Boolean);
+          const uniqueEnds = [...new Set(predEndEvents)];
+
+          // Only create dummy arcs when:
+          // - there are 2+ predecessors
+          // - all predecessor tasks exist in allTasks
+          // - predecessor end events differ
+          if (
+            preds.length >= 2 &&
+            preds.every(p => allTasks.has(p)) &&
+            uniqueEnds.length > 1
+          ) {
+            for (const p of preds) {
+              if (p === primary) continue;
+              const predTask = allTasks.get(p);
+              const predEnd = predTask?._toEventId;
+              if (!predEnd) continue;
+              if (predEnd === fromEventId) continue; 
+
+              const exists = connections.some(c => c.isDummy && c.from === predEnd && c.to === fromEventId && c.sourceTaskId === p);
+              if (!exists) {
+                connections.push({ from: predEnd, to: fromEventId, taskId: null, duration: 0, isDummy: true, sourceTaskId: p });
+              }
             }
-          });
+          }
         }
 
-        // Create a unique end event for this task keyed by [task.id]
         const endEvent = getOrCreateEventForPreds([task.id]);
-        // ensure we use the kept id (don't override if previously created)
         const toId = endEvent.id;
 
-        // record mapping on the task for later usage
         task._fromEventId = fromEventId;
         task._toEventId = toId;
 
-        // push real connection
-        connections.push({
-          from: fromEventId,
-          to: toId,
-          taskId: task.id,
-          duration: task.duration,
-          isDummy: false,
-          task
-        });
+        connections.push({ from: fromEventId, to: toId, taskId: task.id, duration: task.duration, isDummy: false, task });
 
-        assignedTasks.add(task.id);
-        pending.delete(task.id);
+        assigned.add(task.id);
+        progress = true;
       }
+
+      if (!progress) break;
     }
 
-    // Create FINISH event (collect tasks that no other tasks depend on)
-    const endTasks = results.filter(t => !results.some(q => (q.predecessors || []).includes(t.id)));
-    const finishPredIds = endTasks.map(t => t.id).sort();
+    const noSucc = results.filter(t => !results.some(u => normalizePreds(u.predecessors).includes(t.id)));
+    const finishPredIds = noSucc.map(t => t.id).sort();
     const finishEvent = getOrCreateEventForPreds(finishPredIds);
     const oldFinishId = finishEvent.id;
     finishEvent.id = 'FINISH';
 
-    // Update connections that pointed to the old finish event (if any)
-    connections.forEach(conn => {
-      if (conn.to === oldFinishId) conn.to = 'FINISH';
-      if (conn.from === oldFinishId) conn.from = 'FINISH';
+    connections.forEach(c => {
+      if (c.to === oldFinishId) c.to = 'FINISH';
+      if (c.from === oldFinishId) c.from = 'FINISH';
     });
 
-    // Connect each end task's end event to FINISH if not already connected
-    endTasks.forEach(task => {
-      const taskEndEvent = task._toEventId;
-      if (taskEndEvent && taskEndEvent !== 'FINISH') {
-        const exists = connections.some(c => c.from === taskEndEvent && c.to === 'FINISH');
-        if (!exists) {
-          connections.push({
-            from: taskEndEvent,
-            to: 'FINISH',
-            taskId: null,
-            duration: 0,
-            isDummy: true
-          });
-        }
+    noSucc.forEach(t => {
+      const endEv = t._toEventId;
+      if (!t._toEventId || t._toEventId === "FINISH") return;
+      if (t._toEventId === oldFinishId) return;
+      const exists = connections.some(
+        (c) => c.from === t._toEventId && c.to === "FINISH"
+      );
+
+      if (!exists) {
+        connections.push({
+          from: t._toEventId,
+          to: "FINISH",
+          taskId: null,
+          duration: 0,
+          isDummy: true
+        });
       }
+
     });
 
-    // Convert eventsByKey values to event list. Keep order stable: START first, FINISH last.
     const events = Array.from(eventsByKey.values()).map(ev => ({ id: ev.id, predIds: ev.predIds }));
     if (!events.some(e => e.id === 'START')) events.unshift({ id: 'START', predIds: [] });
     if (!events.some(e => e.id === 'FINISH')) events.push({ id: 'FINISH', predIds: [] });
@@ -181,7 +169,9 @@ const PertDiagram = ({ results = [], tasks }) => {
 
   const { events, connections } = buildEventGraph();
 
-  // Compute simple level positions for events
+  // -------------------------
+  // calculateEventPositions
+  // -------------------------
   const calculateEventPositions = () => {
     const positions = {};
     const eventLevels = new Map();
@@ -207,7 +197,6 @@ const PertDiagram = ({ results = [], tasks }) => {
     const maxLevelSoFar = Math.max(...Array.from(eventLevels.values()));
     eventLevels.set('FINISH', maxLevelSoFar);
 
-    // group by level
     const levels = new Map();
     const maxLevel = Math.max(...Array.from(eventLevels.values()));
     for (let i = 0; i <= maxLevel; i++) levels.set(i, []);
@@ -243,7 +232,9 @@ const PertDiagram = ({ results = [], tasks }) => {
 
   const eventPositions = calculateEventPositions();
 
-  // Compute event timings (forward/backward) similar to original code
+  // -------------------------
+  // calculateEventTimings
+  // -------------------------
   const calculateEventTimings = () => {
     const eventTimings = new Map();
     eventTimings.set('START', { ES: 0, LF: 0 });
@@ -254,9 +245,7 @@ const PertDiagram = ({ results = [], tasks }) => {
       if (visited.has(eid)) return;
       visited.add(eid);
       const incoming = connections.filter(c => c.to === eid);
-      incoming.forEach(c => {
-        if (!visited.has(c.from)) visit(c.from);
-      });
+      incoming.forEach(c => { if (!visited.has(c.from)) visit(c.from); });
       topologicalOrder.push(eid);
     };
 
@@ -341,26 +330,20 @@ const PertDiagram = ({ results = [], tasks }) => {
   const svgHeight = Math.max(maxY - minY, 500);
 
   // create curved path for dummy spaghetti
-  const makeDummyPath = (fromX, fromY, toX, toY, index = 0) => {
+  // returns { d, cx, cy }
+  const makeDummyPathObj = (fromX, fromY, toX, toY, index = 0) => {
     const dx = Math.abs(toX - fromX);
     const dy = toY - fromY;
     const baseDepth = Math.max(40, Math.min(140, dx / 4 + Math.abs(dy) / 4));
-    // add small index-based offset to help avoid stacked curves overlapping exactly
     const jitter = (index % 3) * 8;
     const curveDepth = baseDepth + jitter;
     const controlX = (fromX + toX) / 2;
     const controlY = (fromY + toY) / 2 - (dy > 0 ? curveDepth : -curveDepth);
-    return `M ${fromX} ${fromY} Q ${controlX} ${controlY} ${toX} ${toY}`;
+    const d = `M ${fromX} ${fromY} Q ${controlX} ${controlY} ${toX} ${toY}`;
+    return { d, cx: controlX, cy: controlY };
   };
 
   // group dummy connections by (from,to) to compute small jitter indexes
-  const dummyGroups = {};
-  connections.forEach(c => {
-    if (!c.isDummy) return;
-    const key = `${c.from}-->${c.to}`;
-    dummyGroups[key] = (dummyGroups[key] || 0) + 1;
-  });
-  // we will reuse a per-connection incremental index to jitter overlapping dummies
   const dummyIndexMap = {};
   const getDummyIndex = (from, to) => {
     const key = `${from}-->${to}`;
@@ -382,6 +365,8 @@ const PertDiagram = ({ results = [], tasks }) => {
           {connections.map((conn, i) => {
             const fromPos = eventPositions[conn.from];
             const toPos = eventPositions[conn.to];
+
+            // skip unecessary dummies
             if (!fromPos || !toPos) return null;
 
             const dx = toPos.x - fromPos.x;
@@ -443,21 +428,39 @@ const PertDiagram = ({ results = [], tasks }) => {
                   </>
                 )}
 
+                {/* dummy: curved spaghetti + filled light-grey triangle + label A'(0) */}
                 {conn.isDummy && (
                   <>
-                    <path
-                      d={makeDummyPath(fromX, fromY, toX, toY, getDummyIndex(conn.from, conn.to))}
-                      className={lineClass}
-                      fill="none"
-                    />
-                    <polygon
-                      points={`
-                        ${toX},${toY}
-                        ${arrowX - 8 * Math.sin(angle)},${arrowY + 8 * Math.cos(angle)}
-                        ${arrowX + 8 * Math.sin(angle)},${arrowY - 8 * Math.cos(angle)}
-                      `}
-                      className={arrowClass}
-                    />
+                    {(() => {
+                      const idx = getDummyIndex(conn.from, conn.to);
+                      const { d, cx, cy } = makeDummyPathObj(fromX, fromY, toX, toY, idx);
+                      return (
+                        <>
+                          <path d={d} className={lineClass} fill="none" />
+                          {/* filled light-grey triangle arrowhead */}
+                          <polygon
+                            points={`
+                              ${toX},${toY}
+                              ${arrowX - 8 * Math.sin(angle)},${arrowY + 8 * Math.cos(angle)}
+                              ${arrowX + 8 * Math.sin(angle)},${arrowY - 8 * Math.cos(angle)}
+                            `}
+                            // filled light-grey triangle specifically for dummy
+                            style={{ fill: '#d0d0d0', stroke: 'none' }}
+                          />
+                          {/* dummy label near the curve control point with apostrophe and (0) */}
+                          {conn.sourceTaskId && (
+                            <text
+                              x={cx}
+                              y={cy - 8}
+                              className="connection-label dummy-label"
+                              textAnchor="middle"
+                            >
+                              {`${conn.sourceTaskId}'(0)`}
+                            </text>
+                          )}
+                        </>
+                      );
+                    })()}
                   </>
                 )}
               </g>
@@ -524,6 +527,7 @@ const PertDiagram = ({ results = [], tasks }) => {
                   dominantBaseline="middle"
                 >
                   {isStart ? 'Start' : isFinish ? 'End' : index}
+                  {console.log("RESULTING TASKS:", results)}
                 </text>
               </g>
             );
