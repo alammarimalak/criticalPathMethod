@@ -386,6 +386,13 @@ body {
   color: #000;
 }
 
+.dummy-arrow {
+  stroke: var(--text-secondary);
+  stroke-dasharray: 6; 
+  fill: none;
+  marker-end: url(#arrowhead); 
+}
+
 @media (max-width: 768px) {
   .footer-content {
     grid-template-columns: 1fr;
@@ -400,5 +407,23 @@ body {
   .app-footer {
     margin-top: 2rem;
     padding: 1.5rem 0 1rem;
+  }
+
+  .kofi-btn {
+    position: static;
+    padding: 0.8rem 1.5rem;
+    font-size: 0.9rem;
+    margin: 0 auto 1.5rem auto;
+    display: block;
+    width: fit-content;
+  }
+
+  .app-header {
+    margin-top: 0;
+  }
+
+  .app {
+    display: flex;
+    flex-direction: column;
   }
 }

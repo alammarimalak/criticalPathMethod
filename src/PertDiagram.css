@@ -110,3 +110,16 @@
   fill: #dd0000;
   stroke: #dd0000;
 }
+
+.dummy-line {
+  stroke: #666;
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+  fill: none;
+}
+
+.dummy-arrow {
+  fill: #666;
+  stroke: #666;
+  stroke-width: 1;
+}
