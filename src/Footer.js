@@ -28,7 +28,7 @@ const Footer = () => {
         <div className="footer-section">
           <h4>Legal</h4>
           <p>© {currentYear} CPM Task Scheduler. All rights reserved.</p>
-          <p>Made with Reactjs & Modern Web Technologies</p>
+          <p>Made with Reactjs & D3.js</p>
         </div>
       </div>
       
