@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/criticalPathMethod/static/css/main.19c88bbe.css",
-    "main.js": "/criticalPathMethod/static/js/main.22056bde.js",
+    "main.css": "/criticalPathMethod/static/css/main.575a43af.css",
+    "main.js": "/criticalPathMethod/static/js/main.33bd7d6f.js",
     "index.html": "/criticalPathMethod/index.html",
-    "main.19c88bbe.css.map": "/criticalPathMethod/static/css/main.19c88bbe.css.map",
-    "main.22056bde.js.map": "/criticalPathMethod/static/js/main.22056bde.js.map"
+    "main.575a43af.css.map": "/criticalPathMethod/static/css/main.575a43af.css.map",
+    "main.33bd7d6f.js.map": "/criticalPathMethod/static/js/main.33bd7d6f.js.map"
   },
   "entrypoints": [
-    "static/css/main.19c88bbe.css",
-    "static/js/main.22056bde.js"
+    "static/css/main.575a43af.css",
+    "static/js/main.33bd7d6f.js"
   ]
 }
