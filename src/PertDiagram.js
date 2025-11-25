@@ -142,15 +142,15 @@ const PertDiagram = ({ results = [], tasks }) => {
 
     noSucc.forEach(t => {
       const endEv = t._toEventId;
-      if (!t._toEventId || t._toEventId === "FINISH") return;
-      if (t._toEventId === oldFinishId) return;
+      if (!endEv || endEv === "FINISH") return;
+      if (endEv === oldFinishId) return;
       const exists = connections.some(
-        (c) => c.from === t._toEventId && c.to === "FINISH"
+        (c) => c.from === endEv && c.to === "FINISH"
       );
 
       if (!exists) {
         connections.push({
-          from: t._toEventId,
+          from: endEv,
           to: "FINISH",
           taskId: null,
           duration: 0,
