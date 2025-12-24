@@ -95,7 +95,7 @@ const PertDiagram = ({ results = [], tasks }) => {
           // - all predecessor tasks exist in allTasks
           // - predecessor end events differ
           if (
-            preds.length >= 2 &&
+            preds.length >= 5 &&
             preds.every(p => allTasks.has(p)) &&
             uniqueEnds.length > 1
           ) {

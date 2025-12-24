@@ -10,8 +10,24 @@ import Footer from './Footer';
 import './App.css';
 
 const initialTasks = [
-  { id: 'A', duration: 3, predecessors: [] },
-  { id: 'B', duration: 2, predecessors: ['A'] },
+  { 
+    id: 'A', 
+    title: 'Task A',
+    description: 'Initial task description',
+    subtasks: ['Subtask 1', 'Subtask 2'],
+    duration: 3, 
+    predecessors: [],
+    isDummy: false 
+  },
+  { 
+    id: 'B', 
+    title: 'Task B',
+    description: 'Second task description',
+    subtasks: [],
+    duration: 2, 
+    predecessors: ['A'],
+    isDummy: false 
+  },
 ];
 
 function App() {
@@ -166,6 +182,9 @@ function App() {
       ...prev,
       {
         id: newId,
+        title: '',
+        description: '',
+        subtasks: [],
         duration: isDummy ? 0 : null,
         predecessors: [],
         isDummy,
@@ -217,7 +236,14 @@ function App() {
         isDummy: !!value,
         duration: !!value ? 0 : current.duration,
       };
+    } else if (field === 'subtasks') {
+      // Handle subtasks array updates
+      updated[index] = {
+        ...current,
+        subtasks: Array.isArray(value) ? value : [],
+      };
     } else {
+      // Handle title, description, and other string fields
       updated[index] = { ...current, [field]: value };
     }
 
@@ -278,7 +304,7 @@ function App() {
         {results.length > 0 && !error && (
           <>
             <PertDiagram results={results} tasks={tasks} />
-            <ResultsTable results={results} />
+            <ResultsTable results={results} tasks={tasks} />
             <CriticalPath path={criticalPath} tasks={tasks} />
           </>
         )}
