@@ -1,49 +1,35 @@
 import { useState } from 'react';
 import './ProjectManagerModal.css';
 
-const ProjectManagerModal = ({ isOpen, onClose, onConfirm }) => {
-  const [name, setName] = useState('');
+const ProjectManagerModal = ({ isOpen, onClose, onConfirm, existingTeamMembers = [] }) => {
+  const [projectManager, setProjectManager] = useState('');
   const [projectTitle, setProjectTitle] = useState('');
-  const [teammates, setTeammates] = useState(['', '']); // Start with 2 empty slots
   const [error, setError] = useState('');
 
   const handleSubmit = () => {
-    if (!name.trim()) {
+    if (!projectManager.trim()) {
       setError('Please enter the project manager name');
       return;
     }
     
-    // Filter out empty teammate names
-    const validTeammates = teammates.filter(teammate => teammate.trim() !== '');    
-    
     onConfirm({
-      projectManager: name,
+      projectManager: projectManager.trim(),
       projectTitle: projectTitle.trim() || 'Untitled Project',
-      teammates: validTeammates
+      teammates: existingTeamMembers.filter(member => 
+        member.trim() !== '' && 
+        member !== projectManager.trim()
+      )
     });
     
     // Reset form
-    setName('');
+    setProjectManager('');
     setProjectTitle('');
-    setTeammates(['', '']);
     setError('');
   };
 
-  const handleTeammateChange = (index, value) => {
-    const newTeammates = [...teammates];
-    newTeammates[index] = value;
-    setTeammates(newTeammates);
-  };
-
-  const addTeammate = () => {
-    setTeammates([...teammates, '']);
-  };
-
-  const removeTeammate = (index) => {
-    if (teammates.length > 1) {
-      const newTeammates = teammates.filter((_, i) => i !== index);
-      setTeammates(newTeammates);
-    }
+  const handleProjectManagerChange = (value) => {
+    setProjectManager(value);
+    if (error) setError('');
   };
 
   if (!isOpen) return null;
@@ -52,13 +38,13 @@ const ProjectManagerModal = ({ isOpen, onClose, onConfirm }) => {
     <div className="modal-overlay">
       <div className="modal-container">
         <div className="modal-header">
-          <h3>Team Information</h3>
+          <h3>PDF Export Settings</h3>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
         
         <div className="modal-body">
           <p className="modal-description">
-            Enter team details to include in the PDF report.
+            Configure your PDF report settings. Team members are already assigned from the team list.
           </p>
           
           <div className="form-group">
@@ -80,11 +66,8 @@ const ProjectManagerModal = ({ isOpen, onClose, onConfirm }) => {
             <input
               type="text"
               id="projectManager"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                setError('');
-              }}
+              value={projectManager}
+              onChange={(e) => handleProjectManagerChange(e.target.value)}
               placeholder="Enter project manager's full name"
               className="modal-input"
               autoFocus
@@ -93,47 +76,28 @@ const ProjectManagerModal = ({ isOpen, onClose, onConfirm }) => {
           </div>
           
           <div className="form-group">
-            <div className="teammates-header">
-              <label>Team Members (Optional)</label>
-              <button 
-                type="button" 
-                onClick={addTeammate}
-                className="add-teammate-btn"
-                title="Add another team member"
-              >
-                + Add Member
-              </button>
-            </div>
-            
-            <div className="teammates-list">
-              {teammates.map((teammate, index) => (
-                <div key={index} className="teammate-input-group">
-                  <input
-                    type="text"
-                    value={teammate}
-                    onChange={(e) => handleTeammateChange(index, e.target.value)}
-                    placeholder={`Team member ${index + 1}`}
-                    className="modal-input teammate-input"
-                  />
-                  {teammates.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeTeammate(index)}
-                      className="remove-teammate-btn"
-                      title="Remove team member"
-                    >
-                      ×
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-            
-            <div className="team-summary">
-              <small>
-                Total team members: {1 + teammates.filter(t => t.trim() !== '').length} 
-                (Project Manager + {teammates.filter(t => t.trim() !== '').length} team members)
-              </small>
+            <label>Team Members (from your list)</label>
+            <div className="team-summary-box">
+              <div className="team-preview">
+                {existingTeamMembers.length > 0 ? (
+                  <ul className="team-preview-list">
+                    {existingTeamMembers.map((member, index) => (
+                      <li key={index} className="team-preview-item">
+                        {member}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="no-team-members">
+                    No team members added yet. Add team members above.
+                  </div>
+                )}
+              </div>
+              <div className="team-summary">
+                <small>
+                  Total team members: {existingTeamMembers.length}
+                </small>
+              </div>
             </div>
           </div>
         </div>

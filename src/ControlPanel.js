@@ -1,29 +1,21 @@
-import React from 'react';
-
-const ControlPanel = ({ 
-  onAddTask, 
-  onCalculate, 
-  onReset,
-  onExportPDF,
-  isExporting = false
-}) => {
+const ControlPanel = ({ onAddTask, onCalculate, onReset, onExportPDF, isExporting }) => {
   return (
     <div className="control-panel">
-      <button onClick={onAddTask} className="btn btn-primary">
+      <button className="btn btn-primary" onClick={onAddTask}>
         + Add Task
       </button>
-      <button onClick={onCalculate} className="btn btn-success">
+      <button className="btn btn-success" onClick={onCalculate}>
         Calculate Schedule
       </button>
-      <button onClick={onReset} className="btn btn-warning">
-        Reset All
-      </button>
+      <button className="btn btn-warning" onClick={onReset}>
+        Reset
+      </button>      
       <button 
+        className="btn btn-primary" 
         onClick={onExportPDF} 
-        className="btn btn-primary"
         disabled={isExporting}
       >
-        {isExporting ? <code>Exporting . . . </code> : 'Export PDF'}
+        {isExporting ? 'Generating PDF...' : '📄 Export PDF'}
       </button>
     </div>
   );

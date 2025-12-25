@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const TaskTable = ({ tasks, onUpdateTask, onDeleteTask }) => {
+const TaskTable = ({ tasks, onUpdateTask, onDeleteTask, teamMembers = [] }) => { // Add teamMembers prop
   const [predecessorInputs, setPredecessorInputs] = useState({});
   const [expandedTasks, setExpandedTasks] = useState({});
 
@@ -36,6 +36,10 @@ const TaskTable = ({ tasks, onUpdateTask, onDeleteTask }) => {
 
   const handleDescriptionChange = (index, value) => {
     onUpdateTask(index, 'description', value);
+  };
+
+  const handleResponsibleChange = (index, value) => { // Add this handler
+    onUpdateTask(index, 'responsible', value);
   };
 
   const handleSubtaskChange = (taskIndex, subtaskIndex, value) => {
@@ -88,6 +92,7 @@ const TaskTable = ({ tasks, onUpdateTask, onDeleteTask }) => {
             <th>Subtasks</th>
             <th>Duration</th>
             <th>Predecessors</th>
+            <th>Responsible</th> {/* Add this column */}
             <th>Actions</th>
           </tr>
         </thead>
@@ -173,6 +178,20 @@ const TaskTable = ({ tasks, onUpdateTask, onDeleteTask }) => {
                     />
                   </td>
                   <td>
+                    <select
+                      value={task.responsible || ''}
+                      onChange={(e) => handleResponsibleChange(index, e.target.value)}
+                      className="input-field"
+                    >
+                      <option value="">Select responsible</option>
+                      {teamMembers.map((member, idx) => (
+                        <option key={idx} value={member}>
+                          {member}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td>
                     <button
                       onClick={() => onDeleteTask(index)}
                       className="delete-btn"
@@ -185,7 +204,7 @@ const TaskTable = ({ tasks, onUpdateTask, onDeleteTask }) => {
                 
                 {isExpanded && (
                   <tr key={`subtasks-${index}`} className="subtasks-row">
-                    <td colSpan="7">
+                    <td colSpan="8"> {/* Update colSpan to 8 */}
                       <div className="subtasks-container">
                         {subtasks.length === 0 ? (
                           <div className="no-subtasks">No subtasks added yet</div>

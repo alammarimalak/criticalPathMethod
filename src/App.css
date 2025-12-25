@@ -835,3 +835,25 @@ body {
     margin-top: 0;
   }
 }
+
+.input-field[type="text"], .input-field[type="number"], .input-field select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.8);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.input-field select option {
+  background: var(--surface-color);
+  color: var(--text-primary);
+}
+
+@media (max-width: 1200px) {
+  .task-table th:nth-child(7), 
+  .task-table td:nth-child(7) {
+    max-width: 120px;
+  }
+}

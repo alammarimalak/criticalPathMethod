@@ -25,6 +25,7 @@ const ResultsTable = ({ results, tasks = [] }) => {
             <th>Description</th>
             <th>Subtasks</th>
             <th>Duration</th>
+            <th>Responsible</th>
             <th>ES</th>
             <th>EF</th>
             <th>LS</th>
@@ -76,18 +77,18 @@ const ResultsTable = ({ results, tasks = [] }) => {
                     </div>
                   </td>
                   <td>{result.duration}</td>
+                  <td>{taskData.responsible || '-'}</td>
                   <td>{result.ES}</td>
                   <td>{result.EF}</td>
                   <td>{result.LS}</td>
                   <td>{result.LF}</td>
                   <td>{result.MT}</td>
                   <td>{result.ML}</td>
-                </tr>
+                </tr>                
                 
-                {/* Expanded subtasks row */}
                 {isExpanded && hasSubtasks && (
                   <tr key={`subtasks-${result.id}`} className="subtasks-details-row">
-                    <td colSpan="11">
+                    <td colSpan="12">
                       <div className="subtasks-details">
                         <h4>Subtasks for {result.id}: {taskData.title || 'Untitled'}</h4>
                         <ul className="subtasks-list">
