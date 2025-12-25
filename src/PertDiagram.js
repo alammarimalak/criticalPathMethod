@@ -1,6 +1,13 @@
 import './PertDiagram.css';
+import { forwardRef, useImperativeHandle, useRef } from 'react'
 
-const PertDiagram = ({ results = [], tasks }) => {
+const PertDiagram = forwardRef(({ results = [], tasks }, ref) => {
+  const containerRef = useRef(null);
+
+  useImperativeHandle(ref, () => ({
+    getElement: () => containerRef.current
+  }));
+
   if (!results || results.length === 0) return null;
 
   // Layout constants
@@ -352,7 +359,7 @@ const PertDiagram = ({ results = [], tasks }) => {
   };
 
   return (
-    <div className="pert-diagram-container">
+    <div ref={containerRef} className="pert-diagram-container">
       <h3>Diagramme PERT</h3>
       <div className="pert-diagram-wrapper">
         <svg
@@ -536,6 +543,6 @@ const PertDiagram = ({ results = [], tasks }) => {
       </div>
     </div>
   );
-};
+});
 
 export default PertDiagram;
