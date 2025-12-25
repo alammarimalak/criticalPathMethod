@@ -23,7 +23,7 @@ const ControlPanel = ({
         className="btn btn-primary"
         disabled={isExporting}
       >
-        {isExporting ? 'On My Way !' : 'Export PDF'}
+        {isExporting ? <code>Exporting . . . </code> : 'Export PDF'}
       </button>
     </div>
   );

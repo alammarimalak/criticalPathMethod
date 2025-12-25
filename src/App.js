@@ -47,11 +47,16 @@ function App() {
     setShowModal(true);
   };
 
-  const handleGeneratePDF = async (projectManager) => {
+  const handleGeneratePDF = async (teamData) => {
     setShowModal(false);
     setIsExporting(true);
     
     try {
+      // Destructure teamData object
+      const { projectManager, projectTitle, teammates } = teamData;
+      const validTeammates = teammates.filter(t => t.trim() !== "");
+      const totalTeamMembers = 1 + validTeammates.length;
+
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
@@ -72,14 +77,23 @@ function App() {
       pdf.setTextColor(96, 165, 250); // Light blue
       pdf.text('CPM', pageWidth / 2, 70, { align: 'center' });
       
-      pdf.setFontSize(24);
-      pdf.setTextColor(255, 255, 255);
-      pdf.text('PROJECT SCHEDULE', pageWidth / 2, 85, { align: 'center' });
+      // Use projectTitle if provided
+      if (projectTitle && projectTitle !== 'Untitled Project') {
+        pdf.setFontSize(20);
+        pdf.setTextColor(255, 255, 255);
+        pdf.text(projectTitle.toUpperCase(), pageWidth / 2, 85, { align: 'center' });
+        pdf.setFontSize(14);
+        pdf.text('PROJECT SCHEDULE', pageWidth / 2, 95, { align: 'center' });
+      } else {
+        pdf.setFontSize(24);
+        pdf.setTextColor(255, 255, 255);
+        pdf.text('PROJECT SCHEDULE', pageWidth / 2, 85, { align: 'center' });
+      }
       
       // Subtitle
       pdf.setFontSize(14);
       pdf.setTextColor(203, 213, 225); // Text secondary color
-      pdf.text('Critical Path Method Analysis', pageWidth / 2, 100, { align: 'center' });
+      pdf.text('Critical Path Method Analysis', pageWidth / 2, projectTitle && projectTitle !== 'Untitled Project' ? 105 : 100, { align: 'center' });
       
       // Generated info
       const now = new Date();
@@ -94,15 +108,16 @@ function App() {
       });
       
       pdf.setFontSize(11);
-      pdf.text(`Generated on ${formattedDate} at ${formattedTime}`, pageWidth / 2, 115, { align: 'center' });
+      const infoY = projectTitle && projectTitle !== 'Untitled Project' ? 120 : 115;
+      pdf.text(`Generated on ${formattedDate} at ${formattedTime}`, pageWidth / 2, infoY, { align: 'center' });
       
       // Modern info card
       const projectDuration = results.length > 0 
         ? Math.max(...results.map(r => r.EF))
         : 0;
       
-      const cardY = 140;
-      const cardHeight = 80;
+      const cardY = infoY + 20;
+      const cardHeight = 100; // Increased height to accommodate all information
       
       // Card background with subtle border
       pdf.setDrawColor(51, 65, 85); // Border color
@@ -130,21 +145,51 @@ function App() {
       pdf.text(`With Subtasks: ${tasksWithSubtasks}`, 35, gridY + 8);
       pdf.text(`Critical Tasks: ${criticalTasks}`, 35, gridY + 16);
       
-      // Right column
+      // Right column - Team information
       pdf.text(`Project Duration: ${projectDuration} units`, pageWidth - 35, gridY, { align: 'right' });
+      pdf.text(`Team Size: ${totalTeamMembers} ${totalTeamMembers === 1 ? 'person' : 'people'}`, pageWidth - 35, gridY + 8, { align: 'right' });
       
+      if (validTeammates.length > 0) {
+        pdf.text(`(PM + ${validTeammates.length} members)`, pageWidth - 35, gridY + 16, { align: 'right' });
+      }
+      
+      // Project Manager and Team Members - BOTTOM MIDDLE SECTION
+      const teamSectionY = gridY + 30;
+      
+      pdf.setFontSize(11);
+      pdf.setTextColor(255, 255, 255);
+      pdf.text(`Project Manager: ${projectManager}`, pageWidth / 2, teamSectionY, { align: 'center' });
+      
+      // Display teammates if available
+      if (validTeammates.length > 0) {
+        pdf.setTextColor(203, 213, 225);
+        pdf.text(`Team Members: ${validTeammates.join(', ')}`, pageWidth / 2, teamSectionY + 8, { align: 'center' });
+      }
+      
+      // Critical Path - BOTTOM MIDDLE INSIDE PROJECT OVERVIEW
       if (criticalPath.length > 0) {
-        pdf.text(`Critical Path:`, pageWidth - 35, gridY + 8, { align: 'right' });
+        const criticalPathY = teamSectionY + (validTeammates.length > 0 ? 18 : 10);
+        pdf.setFontSize(11);
+        pdf.setTextColor(255, 255, 255);
+        pdf.text(`Critical Path:`, pageWidth / 2, criticalPathY, { align: 'center' });
         
         // Handle long critical path by splitting
-        const cpString = criticalPath.join(' -> ');
-        if (cpString.length > 30) {
-          const firstPart = cpString.substring(0, 30);
-          const secondPart = cpString.substring(30);
-          pdf.text(firstPart + '-', pageWidth - 35, gridY + 16, { align: 'right' });
-          pdf.text(secondPart, pageWidth - 35, gridY + 24, { align: 'right' });
+        const cpString = criticalPath.join(' - ');
+        if (cpString.length > 40) {
+          // Split into multiple lines if too long
+          const maxLength = 40;
+          const parts = [];
+          for (let i = 0; i < cpString.length; i += maxLength) {
+            parts.push(cpString.substring(i, i + maxLength));
+          }
+          
+          parts.forEach((part, index) => {
+            pdf.setTextColor(203, 213, 225);
+            pdf.text(part, pageWidth / 2, criticalPathY + 8 + (index * 6), { align: 'center' });
+          });
         } else {
-          pdf.text(cpString, pageWidth - 35, gridY + 16, { align: 'right' });
+          pdf.setTextColor(203, 213, 225);
+          pdf.text(cpString, pageWidth / 2, criticalPathY + 8, { align: 'center' });
         }
       }
       
@@ -153,18 +198,7 @@ function App() {
       pdf.setLineWidth(0.5);
       pdf.line(30, cardY + cardHeight + 10, pageWidth - 30, cardY + cardHeight + 10);
       
-      // Footer section
-      const footerY = pageHeight - 60;
-      
-      // Project Manager info
-      pdf.setFontSize(12);
-      pdf.setTextColor(255, 255, 255);
-      pdf.text(`Prepared by: ${projectManager}`, pageWidth / 2, footerY, { align: 'center' });
-      pdf.setFontSize(10);
-      pdf.setTextColor(148, 163, 184);
-      pdf.text('Project Manager', pageWidth / 2, footerY + 6, { align: 'center' });
-      
-      // Technology credits
+      // Technology credits (at the bottom of the page)
       pdf.setFontSize(9);
       pdf.setTextColor(255, 255, 255);
       
@@ -351,7 +385,7 @@ function App() {
           <div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
             <h2 style="text-align: center; margin-bottom: 15px; color: #2c3e50;">Schedule Calculation Results</h2>
             <div style="margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #e74c3c;">
-              <strong>Critical Path:</strong> ${criticalPath.join(' → ')}<br>
+              <strong>Critical Path:</strong> ${criticalPath.join(' - ')}<br>
               <strong>Total Project Duration:</strong> ${Math.max(...results.map(r => r.EF))} units
             </div>
             <table border="1" cellpadding="6" cellspacing="0" style="width: 100%; border-collapse: collapse; font-size: 10px;">
@@ -420,7 +454,11 @@ function App() {
       }
       
       // ========== SAVE PDF ==========
-      const fileName = `CPM_Project_${projectManager.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`;
+      // Use projectTitle in filename
+      const safeProjectTitle = (projectTitle && projectTitle !== 'Untitled Project') 
+        ? projectTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()
+        : 'project';
+      const fileName = `CPM_${safeProjectTitle}_${projectManager.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`;
       pdf.save(fileName);
       
     } catch (error) {

@@ -495,14 +495,6 @@ body {
   }
 }
 
-@media (max-width: 992px) {
-  .task-table th:nth-child(3), 
-  .task-table td:nth-child(3),
-  .task-table th:nth-child(4), 
-  .task-table td:nth-child(4) {
-    display: none;
-  }
-}
 
 @media (max-width: 768px) {
   .footer-content {
