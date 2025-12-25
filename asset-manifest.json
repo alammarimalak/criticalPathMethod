@@ -1,13 +1,17 @@
 {
   "files": {
-    "main.css": "/criticalPathMethod/static/css/main.575a43af.css",
-    "main.js": "/criticalPathMethod/static/js/main.86bd39ca.js",
+    "main.css": "/criticalPathMethod/static/css/main.1d04421d.css",
+    "main.js": "/criticalPathMethod/static/js/main.aebf0cea.js",
+    "static/js/977.1007ca97.chunk.js": "/criticalPathMethod/static/js/977.1007ca97.chunk.js",
+    "static/js/455.a216b5d0.chunk.js": "/criticalPathMethod/static/js/455.a216b5d0.chunk.js",
     "index.html": "/criticalPathMethod/index.html",
-    "main.575a43af.css.map": "/criticalPathMethod/static/css/main.575a43af.css.map",
-    "main.86bd39ca.js.map": "/criticalPathMethod/static/js/main.86bd39ca.js.map"
+    "main.1d04421d.css.map": "/criticalPathMethod/static/css/main.1d04421d.css.map",
+    "main.aebf0cea.js.map": "/criticalPathMethod/static/js/main.aebf0cea.js.map",
+    "977.1007ca97.chunk.js.map": "/criticalPathMethod/static/js/977.1007ca97.chunk.js.map",
+    "455.a216b5d0.chunk.js.map": "/criticalPathMethod/static/js/455.a216b5d0.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.575a43af.css",
-    "static/js/main.86bd39ca.js"
+    "static/css/main.1d04421d.css",
+    "static/js/main.aebf0cea.js"
   ]
 }
