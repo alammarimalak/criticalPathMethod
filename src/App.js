@@ -415,7 +415,7 @@ if (results.length > 0) {
   
   // Get current page dimensions (now in portrait)
   const pageWidth = pdf.internal.pageSize.getWidth(); // Should be 210mm for A4 portrait
-  const pageHeight = pdf.internal.pageSize.getHeight(); // Should be 297mm for A4 portrait
+  //const pageHeight = pdf.internal.pageSize.getHeight(); 
   
   pdf.setFontSize(18);
   pdf.text('CALCULATION RESULTS', pageWidth / 2, 20, { align: 'center' });
@@ -754,12 +754,11 @@ if (results.length > 0) {
       </a>
 
       <header className="app-header">
-        <h1>CPM Task Scheduler</h1>
-        <p>Enter tasks, durations, and predecessors, then calculate ES/EF/LS/LF/MT/ML.</p>
+        <h1>Scrum Dealer</h1>
+        <p>Smart Project Planning with Scrum and PERT</p>
       </header>
 
-      <main className="app-main">
-        {/* Team Management Section */}
+      <main className="app-main">        
         <div className="table-container">
           <h3 style={{ marginBottom: '1rem', color: 'var(--text-primary)' }}>
             Team Members

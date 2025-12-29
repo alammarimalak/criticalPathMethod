@@ -5,8 +5,8 @@ const Footer = () => {
     <footer className="app-footer">
       <div className="footer-content">
         <div className="footer-section">
-          <h4>CPM Task Scheduler</h4>
-          <p>Critical Path Method scheduling tool for project management</p>
+          <h4>Scrum Dealer</h4>
+          <p>Smart Project Planning with Scrum and PERT</p>
         </div>
         
         <div className="footer-section">
@@ -27,7 +27,7 @@ const Footer = () => {
         
         <div className="footer-section">
           <h4>Legal</h4>
-          <p>© {currentYear} CPM Task Scheduler. All rights reserved.</p>
+          <p>© {currentYear} Scrum Dealer. All rights reserved.</p>
           <p>Made with Reactjs, D3.js, jsPDF & html2canva</p>
         </div>
       </div>

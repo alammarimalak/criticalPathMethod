@@ -212,7 +212,6 @@ const PertDiagram = forwardRef(({ results = [], tasks }, ref) => {
       levels.get(lvl).push(id);
     });
 
-    // order in each level by earliest ES of related tasks (approx)
     levels.forEach((ids, level) => {
       ids.sort((a, b) => {
         const aEvent = events.find(e => e.id === a) || { predIds: [] };
@@ -328,7 +327,6 @@ const PertDiagram = forwardRef(({ results = [], tasks }, ref) => {
     return incomingCritical || outgoingCritical;
   };
 
-  // svg bounds
   const allPositions = Object.values(eventPositions);
   const allYCoords = allPositions.map(p => p.y);
   const maxX = Math.max(...allPositions.map(p => p.x)) + 200;
@@ -336,9 +334,7 @@ const PertDiagram = forwardRef(({ results = [], tasks }, ref) => {
   const minY = Math.min(...allYCoords) - NODE_RADIUS - 50;
   const svgHeight = Math.max(maxY - minY, 500);
 
-  // create curved path for dummy spaghetti
-  // returns { d, cx, cy }
-  const makeDummyPathObj = (fromX, fromY, toX, toY, index = 0) => {
+   const makeDummyPathObj = (fromX, fromY, toX, toY, index = 0) => {
     const dx = Math.abs(toX - fromX);
     const dy = toY - fromY;
     const baseDepth = Math.max(40, Math.min(140, dx / 4 + Math.abs(dy) / 4));
@@ -350,7 +346,6 @@ const PertDiagram = forwardRef(({ results = [], tasks }, ref) => {
     return { d, cx: controlX, cy: controlY };
   };
 
-  // group dummy connections by (from,to) to compute small jitter indexes
   const dummyIndexMap = {};
   const getDummyIndex = (from, to) => {
     const key = `${from}-->${to}`;
