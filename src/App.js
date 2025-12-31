@@ -49,7 +49,6 @@ function App() {
   
   const pertDiagramRef = useRef(null);
 
-  // Function to add team member
   const handleAddTeamMember = () => {
     if (newTeamMember.trim() && !teamMembers.includes(newTeamMember.trim())) {
       setTeamMembers([...teamMembers, newTeamMember.trim()]);
@@ -57,7 +56,6 @@ function App() {
     }
   };
 
-  // Function to remove team member
   const handleRemoveTeamMember = (member) => {
     setTeamMembers(teamMembers.filter(m => m !== member));
   };
@@ -105,7 +103,7 @@ function App() {
       // Main title with gradient effect (simulated)
       pdf.setFontSize(32);
       pdf.setTextColor(96, 165, 250); // Light blue
-      pdf.text('CPM', pageWidth / 2, 70, { align: 'center' });
+      pdf.text('Scrum Dealer', pageWidth / 2, 70, { align: 'center' });
       
       // Use projectTitle if provided
       if (currentProjectTitle && currentProjectTitle !== 'Untitled Project') {
@@ -113,7 +111,7 @@ function App() {
         pdf.setTextColor(255, 255, 255);
         pdf.text(currentProjectTitle.toUpperCase(), pageWidth / 2, 85, { align: 'center' });
         pdf.setFontSize(14);
-        pdf.text('PROJECT SCHEDULE', pageWidth / 2, 95, { align: 'center' });
+        pdf.text('PROJECT REPORT', pageWidth / 2, 95, { align: 'center' });
       } else {
         pdf.setFontSize(24);
         pdf.setTextColor(255, 255, 255);
@@ -123,7 +121,7 @@ function App() {
       // Subtitle
       pdf.setFontSize(14);
       pdf.setTextColor(203, 213, 225); // Text secondary color
-      pdf.text('Critical Path Method Analysis', pageWidth / 2, currentProjectTitle && currentProjectTitle !== 'Untitled Project' ? 105 : 100, { align: 'center' });
+      pdf.text('Scrum x Pert Analysis', pageWidth / 2, currentProjectTitle && currentProjectTitle !== 'Untitled Project' ? 105 : 100, { align: 'center' });
       
       // Generated info
       const now = new Date();
@@ -176,9 +174,50 @@ function App() {
       pdf.text(`Critical Tasks: ${criticalTasks}`, 35, gridY + 16);
       
       // Right column - Team information
-      pdf.text(`Project Duration: ${projectDuration} units`, pageWidth - 35, gridY, { align: 'right' });
+      const convertDaysToReadableFormat = (days) => {
+        if (days <= 0) return "0 days";
+        
+        const months = Math.floor(days / 30);
+        const remainingDays = days % 30;
+        
+        // If exactly 12 months, show as 1 year
+        if (months === 12 && remainingDays === 0) {
+          return "1 year";
+        }
+        
+        // If between 28-31 days, consider it as approximately 1 month
+        if (days >= 28 && days <= 31) {
+          return "~1 month";
+        }
+        
+        // For months and days
+        let result = [];
+        if (months > 0) {
+          result.push(`${months} ${months === 1 ? 'month' : 'months'}`);
+        }
+        
+        // Add remaining days if any (only if less than a month's worth)
+        if (remainingDays > 0 && months === 0) {
+          result.push(`${remainingDays} ${remainingDays === 1 ? 'day' : 'days'}`);
+        } else if (remainingDays > 0) {
+          // For readability, you might want to exclude small remaining days
+          if (remainingDays >= 7) { // Only show if it's a week or more
+            result.push(`${remainingDays} days`);
+          }
+        }
+        
+        return result.join(", ");
+      };
+
+      const projectDurationDays = results.length > 0 
+        ? Math.max(...results.map(r => r.EF))
+        : 0;
+
+      const readableDuration = convertDaysToReadableFormat(projectDurationDays);
+
+      pdf.text(`Project Duration: ${readableDuration}`, pageWidth - 35, gridY, { align: 'right' });
       pdf.text(`Team Size: ${totalTeamMembers} ${totalTeamMembers === 1 ? 'person' : 'people'}`, pageWidth - 35, gridY + 8, { align: 'right' });
-      
+            
       if (validTeammates.length > 0) {
         pdf.text(`(PM + ${validTeammates.length} members)`, pageWidth - 35, gridY + 16, { align: 'right' });
       }
@@ -234,8 +273,9 @@ function App() {
       
       const techY = pageHeight - 30;
       pdf.text('Generated with jsPDF & html2canvas', pageWidth / 2, techY, { align: 'center' });
-      pdf.text('Powered by React CPM Scheduler - Made with Passion for Project Management', pageWidth / 2, techY + 6, { align: 'center' });
-      
+      pdf.text('Powered by Scrum Dealer - Made with Passion for Project Management', pageWidth / 2, techY + 6, { align: 'center' });
+      pdf.text('Made by Al ammari Malak', pageWidth / 2, techY + 12, { align: 'center' });
+
       // ========== PAGE 1: TASK TABLE ==========
       pdf.addPage();
       
@@ -320,113 +360,21 @@ function App() {
       
       document.body.removeChild(taskTableContainer);
       
-      // ========== PAGE 2: PERT DIAGRAM ==========
-if (pertDiagramRef.current) {
-  // Create a new landscape page
-  const landscapeWidth = 297; // A4 landscape width in mm
-  const landscapeHeight = 210; // A4 landscape height in mm
-  
-  // Add landscape page
-  pdf.addPage([landscapeWidth, landscapeHeight], 'l'); // 'l' for landscape
-  
-  // Now update the page dimensions
-  const currentWidth = pdf.internal.pageSize.getWidth();
-  const currentHeight = pdf.internal.pageSize.getHeight();
-  
-  // Prepare PERT diagram for PDF - use getElement() method
-  const pertElement = pertDiagramRef.current.getElement();
-  if (pertElement) {
-    const pertContainer = document.createElement('div');
-    pertContainer.style.position = 'absolute';
-    pertContainer.style.left = '-9999px';
-    pertContainer.style.top = '-9999px';
-    pertContainer.style.width = '1200px'; // Wider for landscape
-    pertContainer.style.backgroundColor = '#ffffff';
-    pertContainer.style.padding = '20px';
-    
-    // Clone the actual DOM element
-    const pertClone = pertElement.cloneNode(true);
-    prepareElementForPDF(pertClone);
-    
-    // Make the SVG wider for landscape
-    const svg = pertClone.querySelector('svg');
-    if (svg) {
-      const originalWidth = parseInt(svg.getAttribute('width') || '0');
-      const originalHeight = parseInt(svg.getAttribute('height') || '0');
-      
-      // Scale up the SVG for better quality in PDF
-      const scaleFactor = 1.5;
-      svg.setAttribute('width', originalWidth * scaleFactor);
-      svg.setAttribute('height', originalHeight * scaleFactor);
-      
-      // Update viewBox to maintain aspect ratio
-      const viewBox = svg.getAttribute('viewBox');
-      if (viewBox) {
-        const [x, y, width, height] = viewBox.split(' ').map(Number);
-        svg.setAttribute('viewBox', `${x} ${y} ${width} ${height}`);
-      }
-    }
-    
-    pertContainer.appendChild(pertClone);
-    document.body.appendChild(pertContainer);
-    
-    const pertCanvas = await html2canvas(pertContainer, {
-      scale: 2, // Higher scale for better quality
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      logging: false,
-      width: 1200
-    });
-    
-    const pertImgData = pertCanvas.toDataURL('image/png');
-    
-    // Calculate dimensions to fit the landscape page
-    const imgWidth = currentWidth - 40; // 40mm margins
-    const imgHeight = (pertCanvas.height * imgWidth) / pertCanvas.width;
-    
-    let finalWidth = imgWidth;
-    let finalHeight = imgHeight;
-    
-    // Adjust if too tall
-    if (imgHeight > currentHeight - 50) {
-      finalHeight = currentHeight - 50;
-      finalWidth = (pertCanvas.width * finalHeight) / pertCanvas.height;
-    }
-    
-    // Center horizontally, position vertically with space for title
-    const xPos = (currentWidth - finalWidth) / 2;
-    const yPos = 35; // Space for title
-    
-    pdf.setFontSize(18);
-    pdf.text('PERT NETWORK DIAGRAM', currentWidth / 2, 20, { align: 'center' });
-    
-    pdf.addImage(pertImgData, 'PNG', xPos, yPos, finalWidth, finalHeight);
-    
-    pdf.setFontSize(10);
-    pdf.text('Note: Critical path tasks are highlighted in red', currentWidth / 2, currentHeight - 10, { align: 'center' });
-    
-    document.body.removeChild(pertContainer);
-  }
-}
-      // ========== PAGE 3: CALCULATION RESULTS ==========
-if (results.length > 0) {
-  // Add a new page in PORTRAIT orientation
+            // ========== PAGE 3: CALCULATION RESULTS ==========
+if (results.length > 0) {  
   pdf.addPage('a4', 'p'); // 'p' for portrait
   
-  // Get current page dimensions (now in portrait)
-  const pageWidth = pdf.internal.pageSize.getWidth(); // Should be 210mm for A4 portrait
-  //const pageHeight = pdf.internal.pageSize.getHeight(); 
+  const pageWidth = pdf.internal.pageSize.getWidth(); 
   
   pdf.setFontSize(18);
   pdf.text('CALCULATION RESULTS', pageWidth / 2, 20, { align: 'center' });
   
-  // Create results table HTML
   const resultsTableHTML = `
     <div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
       <h2 style="text-align: center; margin-bottom: 15px; color: #2c3e50;">Schedule Calculation Results</h2>
       <div style="margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #e74c3c;">
         <strong>Critical Path:</strong> ${criticalPath.join(' - ')}<br>
-        <strong>Total Project Duration:</strong> ${Math.max(...results.map(r => r.EF))} units
+        <strong>Total Project Duration:</strong> ${Math.max(...results.map(r => r.EF))} days
       </div>
       <table border="1" cellpadding="6" cellspacing="0" style="width: 100%; border-collapse: collapse; font-size: 10px;">
         <thead>
@@ -495,14 +443,98 @@ if (results.length > 0) {
   
   document.body.removeChild(resultsContainer);
 }
+
+      // ========== PAGE 2: PERT DIAGRAM ==========
+if (pertDiagramRef.current) {
+  // Create a new landscape page
+  const landscapeWidth = 297; // A4 landscape width in mm
+  const landscapeHeight = 210; // A4 landscape height in mm
+  
+  // Add landscape page
+  pdf.addPage([landscapeWidth, landscapeHeight], 'l'); // 'l' for landscape
+  
+  // Now update the page dimensions
+  const currentWidth = pdf.internal.pageSize.getWidth();
+  const currentHeight = pdf.internal.pageSize.getHeight();
+  
+  // Prepare PERT diagram for PDF - use getElement() method
+  const pertElement = pertDiagramRef.current.getElement();
+  if (pertElement) {
+    const pertContainer = document.createElement('div');
+    pertContainer.style.position = 'absolute';
+    pertContainer.style.left = '-9999px';
+    pertContainer.style.top = '-9999px';
+    pertContainer.style.width = '1200px'; // Wider for landscape
+    pertContainer.style.backgroundColor = '#ffffff';
+    pertContainer.style.padding = '20px';
+    
+    // Clone the actual DOM element
+    const pertClone = pertElement.cloneNode(true);
+    prepareElementForPDF(pertClone);
+    
+    // Make the SVG wider for landscape
+    const svg = pertClone.querySelector('svg');
+    if (svg) {
+      const originalWidth = parseInt(svg.getAttribute('width') || '0');
+      const originalHeight = parseInt(svg.getAttribute('height') || '0');
       
+      // Scale up the SVG for better quality in PDF
+      const scaleFactor = 1.5;
+      svg.setAttribute('width', originalWidth * scaleFactor);
+      svg.setAttribute('height', originalHeight * scaleFactor);
+      
+      // Update viewBox to maintain aspect ratio
+      const viewBox = svg.getAttribute('viewBox');
+      if (viewBox) {
+        const [x, y, width, height] = viewBox.split(' ').map(Number);
+        svg.setAttribute('viewBox', `${x} ${y} ${width} ${height}`);
+      }
+    }
+    
+    pertContainer.appendChild(pertClone);
+    document.body.appendChild(pertContainer);
+    
+    const pertCanvas = await html2canvas(pertContainer, {
+      scale: 2, // Higher scale for better quality
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      width: 1200
+    });
+    
+    const pertImgData = pertCanvas.toDataURL('image/png');
+    
+    const imgWidth = currentWidth - 40; 
+    const imgHeight = (pertCanvas.height * imgWidth) / pertCanvas.width;
+    
+    let finalWidth = imgWidth;
+    let finalHeight = imgHeight;
+    
+    if (imgHeight > currentHeight - 50) {
+      finalHeight = currentHeight - 50;
+      finalWidth = (pertCanvas.width * finalHeight) / pertCanvas.height;
+    }
+    
+   const xPos = (currentWidth - finalWidth) / 2;
+    const yPos = 35; 
+    
+    pdf.setFontSize(18);
+    pdf.text('PERT NETWORK DIAGRAM', currentWidth / 2, 20, { align: 'center' });
+    
+    pdf.addImage(pertImgData, 'PNG', xPos, yPos, finalWidth, finalHeight);
+    
+    pdf.setFontSize(10);
+    pdf.text('Note: Critical path tasks are highlighted in red', currentWidth / 2, currentHeight - 10, { align: 'center' });
+    
+    document.body.removeChild(pertContainer);
+  }
+}      
       // ========== SAVE PDF ==========
-      // Use projectTitle in filename
       const safeProjectTitle = (currentProjectTitle && currentProjectTitle !== 'Untitled Project') 
         ? currentProjectTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()
         : 'project';
       const safeProjectManager = currentProjectManager.replace(/\s+/g, '_');
-      const fileName = `CPM_${safeProjectTitle}_${safeProjectManager}_${new Date().toISOString().slice(0, 10)}.pdf`;
+      const fileName = `ScrumDealer_${safeProjectTitle}_${safeProjectManager}_${new Date().toISOString().slice(0, 10)}.pdf`;
       pdf.save(fileName);
       
     } catch (error) {
@@ -716,12 +748,9 @@ if (results.length > 0) {
     setProjectTitle('');
   };
 
-  // Helper function to prepare element for PDF capture
   const prepareElementForPDF = (element) => {
-    // Remove interactive elements
     element.querySelectorAll('button, .expand-btn, .delete-btn, .kofi-btn, .input-field').forEach(el => el.remove());
     
-    // Set all text to black
     element.querySelectorAll('*').forEach(el => {
       el.style.color = 'black';
       el.style.backgroundColor = el.classList.contains('critical-task') ? '#ffeaea' : 'transparent';
@@ -729,7 +758,6 @@ if (results.length > 0) {
       el.style.boxShadow = 'none';
     });
     
-    // Ensure good contrast for SVG elements
     const svgs = element.querySelectorAll('svg');
     svgs.forEach(svg => {
       svg.style.backgroundColor = 'white';

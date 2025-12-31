@@ -10,18 +10,15 @@ const PertDiagram = forwardRef(({ results = [], tasks }, ref) => {
 
   if (!results || results.length === 0) return null;
 
-  // Layout constants
   const NODE_RADIUS = 60;
   const LEVEL_SPACING = 280;
   const VERTICAL_SPACING = 150;
   const START_X = 150;
   const START_Y = 300;
 
-  // quick map of tasks by id
   const taskMap = new Map(results.map(t => [t.id, t]));
   const maxEF = Math.max(...results.map(t => t.EF || 0), 0);
 
-  // Helper: normalize predecessor lists
   const normalizePreds = (preds) =>
     (preds || [])
       .map(p => (typeof p === 'string' ? p.trim() : p))
@@ -45,8 +42,7 @@ const PertDiagram = forwardRef(({ results = [], tasks }, ref) => {
       eventsByKey.set(key, ev);
       return ev;
     };
-
-    // START
+    
     const startEvent = getOrCreateEventForPreds([]);
     startEvent.id = 'START';
     startEvent.key = '';
@@ -354,21 +350,20 @@ const PertDiagram = forwardRef(({ results = [], tasks }, ref) => {
   };
 
   return (
-    <div ref={containerRef} className="pert-diagram-container">
-      <h3>Diagramme PERT</h3>
+    <div className="pert-diagram-container">
+      <h3>PERT Diagram</h3>
       <div className="pert-diagram-wrapper">
         <svg
+          ref={containerRef}
           width={maxX}
           height={svgHeight}
           viewBox={`0 ${minY} ${maxX} ${svgHeight}`}
           className="pert-svg"
         >
-          {/* connections */}
           {connections.map((conn, i) => {
             const fromPos = eventPositions[conn.from];
             const toPos = eventPositions[conn.to];
 
-            // skip unecessary dummies
             if (!fromPos || !toPos) return null;
 
             const dx = toPos.x - fromPos.x;
@@ -439,17 +434,14 @@ const PertDiagram = forwardRef(({ results = [], tasks }, ref) => {
                       return (
                         <>
                           <path d={d} className={lineClass} fill="none" />
-                          {/* filled light-grey triangle arrowhead */}
                           <polygon
                             points={`
                               ${toX},${toY}
                               ${arrowX - 8 * Math.sin(angle)},${arrowY + 8 * Math.cos(angle)}
                               ${arrowX + 8 * Math.sin(angle)},${arrowY - 8 * Math.cos(angle)}
                             `}
-                            // filled light-grey triangle specifically for dummy
                             style={{ fill: '#d0d0d0', stroke: 'none' }}
                           />
-                          {/* dummy label near the curve control point with apostrophe and (0) */}
                           {conn.sourceTaskId && (
                             <text
                               x={cx}
@@ -469,7 +461,6 @@ const PertDiagram = forwardRef(({ results = [], tasks }, ref) => {
             );
           })}
 
-          {/* event nodes */}
           {events.map((event, index) => {
             const eventData = getEventData(event.id);
             const pos = eventPositions[event.id];
